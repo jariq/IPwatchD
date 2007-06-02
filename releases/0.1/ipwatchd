@@ -1,0 +1,389 @@
+#!/usr/bin/perl
+
+#############################################################################
+#                                                                           #
+#  IPwatchD - IP conflict detection in Linux systems                        #
+#  Copyright (C) 2006  Jaroslav Imrich <jariq@users.sourceforge.net>        #
+#                                                                           #
+#  This program is free software; you can redistribute it and/or modify     #
+#  the Free Software Foundation; either version 2 of the License, or        #
+#  (at your option) any later version.                                      #
+#  This program is distributed in the hope that it will be useful,          #
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of           #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            #
+#  GNU General Public License for more details.                             #
+#                                                                           #
+#  You should have received a copy of the GNU General Public License along  #
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.              #
+#                                                                           #
+#############################################################################
+
+use strict;
+use POSIX;
+use Sys::Syslog;
+use Net::Pcap;
+use NetPacket::ARP;
+use NetPacket::Ethernet;
+
+# Syslog options
+my $syslog_facility = "daemon";
+my $syslog_priority = "err";
+
+# Global variables
+my ($dev, $mode, $username, $groupname);
+my $instance;
+my ($test, $dev_ip, $dev_mac);
+my $arping;
+my ($userid, $groupid, $orig_uid, $orig_gid);
+my ($sigset, $sigaction);
+my ($error, $pid);
+my ($address, $netmask);
+my ($object, $filter);
+my $message;
+
+# Get parameters from command line
+&get_cmd_parameters();
+
+# Check if program was executed by root
+if (not $< == 0) {
+	print "You must be root to run this program..\n";
+	exit(-1);
+}
+
+# Check if program is not running already
+if (-e "/var/run/ipwatchd-$dev.pid") {
+	$instance = `ps aux | grep ipwatchd | grep -v "grep ipwatchd" | grep -c $dev`;
+	chomp($instance);
+	if ($instance ne "1") {
+		print "There seems to be one instance of IPwatchD already running on $dev\n";
+		exit(-1);
+	}
+}
+
+# Get IP address of selected device
+$test = `ifconfig $dev | grep -c "inet addr"`;
+chomp($test);
+if ($test == 1) {
+    $dev_ip = `ifconfig $dev | grep "inet addr"`;
+    chomp($dev_ip);
+    $dev_ip =~ /^.*inet addr.(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}) .*$/;
+    $dev_ip = $1;
+} else {
+    print "Device $dev does not exist or does not have IP address assigned.\n";
+    exit(-1)
+}
+
+# Get MAC address of selected device
+$test = `ifconfig $dev | grep -c "HWaddr"`;
+chomp($test);
+if ($test == 1) {
+    $dev_mac = `ifconfig $dev | grep "HWaddr"`;
+    chomp($dev_mac);
+    $dev_mac =~ /^.*HWaddr.(.[^ ]*) .*$/;
+    $dev_mac = lc($1);
+    $dev_mac =~ s/://g;
+} else {
+    print "Device $dev does not exist or does not have MAC address.\n";
+    exit(-1)
+}
+
+# Check if arping is installed
+if ($mode eq 'active') {
+    my @dirs = ('/bin', '/sbin', '/usr/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin');
+    my $i;
+
+    for ($i=0; $i<=5; $i++) {
+        if (-x "$dirs[$i]/arping") {
+            $arping = "$dirs[$i]/arping";
+            last;
+        }
+    }
+
+    if (not defined $arping) {
+        print "Utility arping (part of iputils package) not found. Passive mode forced.\n";
+        $mode = 'passive';
+    }
+}
+
+# Check if future effective user and group exists
+if ((defined $username) and (defined $groupname)) {
+
+    if (not $userid = getpwnam($username)) {
+        print "Unable to find UID for specified user.\n";
+        exit(-1);
+    }
+
+    if (not $groupid = getgrnam($groupname)) {
+        print "Unable to find GID for specified group.\n";
+        exit(-1);
+    }
+}
+
+# Daemonize program
+# Since now all error messages must be logged with syslog
+chdir '/' or die "Can not chdir to /: $!";
+umask 0;
+if (not open(STDIN,"/dev/null")) {
+    &logger($syslog_facility, $syslog_priority, "Can not read /dev/null: $!");
+    exit(-1);
+}
+if (not open(STDOUT,">>/dev/null")) {
+    &logger($syslog_facility, $syslog_priority, "Can not write to /dev/null: $!");
+    exit(-1);
+}
+if (not open(STDERR, ">>/dev/null")) {
+    &logger($syslog_facility, $syslog_priority, "Can not write to /dev/null: $!");
+    exit(-1);
+}
+$pid = fork;
+if (not defined $pid) {
+    &logger($syslog_facility, $syslog_priority, "Can not fork: $!");
+    exit(-1);
+}
+exit if $pid;
+if (not setsid) {
+    &logger($syslog_facility, $syslog_priority, "Can not start a new session: $!");
+    exit(-1);
+}
+
+# Create PID file
+if (not open(PID,">/var/run/ipwatchd-$dev.pid")) {
+    &logger($syslog_facility, $syslog_priority, "Can not open PID file: $!");
+    exit(-1);
+}
+print PID $$;
+close(PID);
+
+# SIGTERM handling
+$sigset = POSIX::SigSet->new();
+$sigaction = POSIX::SigAction->new('program_shutdown', $sigset, &POSIX::SA_NODEFER);
+POSIX::sigaction(&POSIX::SIGTERM, $sigaction);
+
+# Get network address and mask for selected device
+if (Net::Pcap::lookupnet($dev, \$address, \$netmask, \$error)) {
+    &logger($syslog_facility, $syslog_priority, "Unable to look up net information for $dev - $error.");
+    exit(-1);
+}
+
+# Create packet capture object on selected device
+$object = Net::Pcap::open_live($dev, 1500, 0, 0, \$error);
+if (not defined $object) {
+    &logger($syslog_facility, $syslog_priority, "Unable to create packet capture on device $dev - $error.");
+    exit(-1);
+}
+
+# Drop privileges
+if (($mode eq "passive") and (defined $userid) and (defined $groupid)) {
+    $orig_gid = $);
+    $orig_uid = $>;
+    $) = "$groupid $groupid";
+    $> = $userid;
+}
+
+# Create capture filter
+if (Net::Pcap::compile($object, \$filter, 'arp', 0, $netmask)) {
+    &logger($syslog_facility, $syslog_priority, "Unable to compile packet capture filter.");
+    exit(-1);
+}
+
+# Attach filter to packet capture object
+if (Net::Pcap::setfilter($object, $filter)) {
+    &logger($syslog_facility, $syslog_priority, "Unable to set packet capture filter.");
+    exit(-1);
+}
+
+# Log start of the daemon activity
+logger($syslog_facility, "info", "Listening on $dev in $mode mode..");
+
+# Set callback function to initiate packet capture loop
+Net::Pcap::loop($object, -1, \&analyse_packet, '');
+
+# Close packet capture object
+Net::Pcap::close($object);
+
+exit(0);
+
+# Hypotetical end of program. Functions follow.. In order of appearance :)
+
+
+
+# Get parameters from command line
+sub get_cmd_parameters {
+
+    my $params = @ARGV;
+
+    # Example: ipwatchd --help
+    if ($params == 1) {
+        
+        if (($ARGV[0] eq '-h') or ($ARGV[0] eq '--help')) { &print_help() }
+        elsif (($ARGV[0] eq '-v') or ($ARGV[0] eq '--version')) { &print_version() }
+        else { &print_usage() }
+
+    # Example: ipwatchd -i eth0
+    } elsif ($params == 2) {
+
+        if (($ARGV[0] eq '-i') and ($ARGV[1] ne '')) {
+            $dev = $ARGV[1];
+            $mode = "active";
+        } else { &print_usage() }
+
+    # Example: ipwatchd -i eth0 -p
+    } elsif ($params == 3) {
+
+        if (($ARGV[0] eq '-i') and ($ARGV[1] ne '') and ($ARGV[2] eq '-p')) {
+            $dev = $ARGV[1];
+            $mode = "passive";
+        } else { &print_usage() }
+
+    # Example: ipwatchd -i eth0 -p -u jariq -g users
+    } elsif ($params == 7) {
+
+        if (($ARGV[0] eq '-i') and ($ARGV[1] ne '') and ($ARGV[2] eq '-p') and ($ARGV[3] eq '-u') and ($ARGV[4] ne '') and ($ARGV[5] eq '-g') and ($ARGV[6] ne '')) {
+            $dev = $ARGV[1];
+            $mode = "passive";
+            $username = $ARGV[4];
+            $groupname = $ARGV[6];
+        } else { &print_usage() }
+
+    } else { &print_usage() }
+
+}
+
+# Hmm.. What is this doing?
+sub print_help {
+    print "IPwatchD - IP conflict detection in Linux systems\n";
+    print "\n";
+    print "Usage: ipwatchd -i device [-p [-u username -g groupname]]\n";
+    print "\n";
+    print "-i device         Device that should be monitored/protected\n";
+    print "-p                Passive mode (conflicts are only logged)\n";
+    print "-u username       Run daemon as unprivileged user\n";
+    print "-g groupname      and unprivileged group\n";
+    print "\n";
+    print "or     ipwatchd -v|-h\n";
+    print "\n";
+    print "-v, --version     Prints program version\n";
+    print "-h, --help        Displays this help message\n";
+    print "\n";
+    print "If IPwatchD running in active mode (default) detects gratuitous\n";
+    print "ARP request with IP address of monitored interface (IP conflict)\n";
+    print "it immediately sends ARP reply to the conflicting host and also\n";
+    print "gratuitous ARP request to update cache of neighbouring hosts\n";
+    print "on local network.\n";
+    print "\n";
+    print "This version of IPwatchD uses arping from iputils package to send\n";
+    print "ARP packets in active mode.\n";
+    print "\n";
+    print "Please send any bug reports to jariq\@users.sourceforge.net\n";
+    print "For more information please visit http://ipwatchd.sourceforge.net\n";
+    exit(0);
+}
+
+# Print version of program
+sub print_version {
+    print "IPwatchD v0.1 (beta)\n";
+    exit(0)
+}
+
+# Print short message about usage
+sub print_usage {
+    print "Usage: ipwatchd -i device [-p [-u username -g groupname]]\n";
+    print "Try 'ipwatchd -h' or 'ipwatchd --help' for more information.\n";
+    exit(-1);
+}
+
+# Log event with syslog
+sub logger {
+
+        my ($fac, $prio, $msg) = @_;
+        #setlogsock('unix');
+        openlog('ipwatchd', 'pid,cons', $fac);
+        syslog($prio, $msg);
+        closelog();
+
+}
+
+# Safely shutdown daemon if SIGTERM received
+sub program_shutdown {
+
+    # Regain privileges
+    if (($mode eq "passive") and (defined $userid) and (defined $groupid)) {
+        $> = $orig_uid;
+        $) = $orig_gid;
+    }
+
+	Net::Pcap::close($object);
+	logger($syslog_facility, "info", "Shutting down (SIGTERM received)");
+	unlink("/var/run/ipwatchd-$dev.pid");
+	exit(0);
+
+}
+
+# Analyse every captured ARP packet
+sub analyse_packet {
+
+	my ($user_data, $header, $packet) = @_;
+	my ($rec_smac, $rec_sip, $rec_dmac, $rec_dip);
+
+	my $eth_obj = NetPacket::Ethernet->decode($packet);
+	my $arp_obj = NetPacket::ARP->decode($eth_obj->{data}, $eth_obj);
+
+	$rec_smac = lc($arp_obj->{sha});
+	$rec_sip = &hex2dec($arp_obj->{spa});
+	$rec_dmac = lc($arp_obj->{tha});
+	$rec_dip = &hex2dec($arp_obj->{tpa});
+
+	if (($rec_sip eq $dev_ip) and ($rec_smac ne $dev_mac)) {
+
+		if ($mode eq "active") {
+
+       		# Log event with syslog
+    		$message = "MAC address ".&printable_mac($rec_smac)." is trying to be our address $dev_ip and we are trying to protect";
+    		&logger($syslog_facility, $syslog_priority, $message);
+
+			# Send gratuitous ARP reply to the network
+			`$arping -A -c 1 -I $dev $dev_ip`;
+	
+			# Defend our IP by sending gratuitous ARP request
+			# that updates cache of every host on the network
+			`$arping -U -c 1 -I $dev $dev_ip`;
+
+		} else {
+
+       			# Log event with syslog and take no action
+    			$message = "MAC address ".&printable_mac($rec_smac)." is trying to be our address $dev_ip";
+    			&logger($syslog_facility, $syslog_priority, $message);
+
+        }
+	}
+}
+
+# Convert IP address into decimal form
+sub hex2dec {
+
+	my ($hexip) = @_;
+	my ($a, $b, $c, $d, $ip);
+	$a = hex substr($hexip, 0, 2);
+	$b = hex substr($hexip, 2, 2);
+	$c = hex substr($hexip, 4, 2);
+	$d = hex substr($hexip, 6, 2);
+	$ip = "$a.$b.$c.$d";
+	return ($ip);
+
+}
+
+# Convert MAC address into printable form
+sub printable_mac {
+
+	my ($mac) = @_;
+	my ($a, $b, $c, $d, $e, $f);
+	$a = substr($mac, 0, 2);
+	$b = substr($mac, 2, 2);
+	$c = substr($mac, 4, 2);
+	$d = substr($mac, 6, 2);
+	$e = substr($mac, 8, 2);
+	$f = substr($mac, 10, 2);
+	$mac = "$a:$b:$c:$d:$e:$f";
+	return($mac);
+
+}

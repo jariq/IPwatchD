@@ -1,0 +1,25 @@
+IPwatchD - IP conflict detection in Linux systems
+
+Usage: ipwatchd -i device [-p [-u username -g groupname]]
+
+-i device         Device that should be monitored/protected
+-p                Passive mode (conflicts are only logged)
+-u username       Run daemon as unprivileged user
+-g groupname      and unprivileged group
+
+or     ipwatchd -v|-h
+
+-v, --version     Prints program version
+-h, --help        Displays this help message
+
+If IPwatchD running in active mode (default) detects gratuitous
+ARP request with IP address of monitored interface (IP conflict)
+it immediately sends ARP reply to the conflicting host and also
+gratuitous ARP request to update cache of neighbouring hosts
+on local network.
+
+This version of IPwatchD uses arping from iputils package to send
+ARP packets in active mode.
+
+Please send any bug reports to jariq@users.sourceforge.net
+For more information please visit http://ipwatchd.sourceforge.net
