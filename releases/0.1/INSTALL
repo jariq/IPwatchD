@@ -1,0 +1,43 @@
+IPwatchD installation
+---------------------
+
+Decompress and unpack the archive:
+
+    bunzip2 ipwatchd-0.1.tar.bz2
+    tar -xvf ipwatchd-0.1.tar
+    
+Copy file "ipwatchd" into some directory in your PATH:
+
+    cd ipwatchd-0.1
+    cp ipwatchd /usr/local/sbin
+
+You can try to run as root
+
+    ipwatchd --help
+    
+to get more information about program usage.
+If you get many errors complaining about missing perl modules,
+you must fulfil the requirements. (see below)
+
+
+IPwatchD requirements
+---------------------
+
+Perl is required to run IPwatchD - it is included in almost every distro.
+
+You also need to install two additional modules for perl - Net::Pcap and NetPacket
+
+You can install it using automatic tools that provides perl by running:
+
+    perl -MCPAN -e 'install Net::Pcap'
+    perl -MCPAN -e 'install NetPacket'
+
+Or you can download these modules from www.cpan.org and then build each one of them
+with commands:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+Arping from iputils package is required for active mode of daemon.
