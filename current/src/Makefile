@@ -34,3 +34,13 @@ clean:
 
 mrproper:
 	-rm *.o ipwatchd
+
+
+install:
+	cp ipwatchd /usr/local/sbin
+	cp ipwatchd.conf /usr/local/etc
+
+uninstall:
+	rm /usr/local/sbin/ipwatchd
+	rm /usr/local/etc/ipwatchd.conf
+

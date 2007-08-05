@@ -1,5 +1,5 @@
-/* IPwatchD - IP conflict detection in Linux systems
- * Copyright (C) 2007 Jaroslav Imrich <jariq@jariq.sk>
+/* IPwatchD - IP conflict detection tool for Linux
+ * Copyright (C) 2007 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,7 +32,7 @@
 #include <pcap.h>
 
 
-#define IPWATCHD_VERSION "IPwatchD 1.0 beta2"
+#define IPWATCHD_VERSION "IPwatchD 1.0"
 
 
 /* Global return values */
@@ -110,3 +110,4 @@ void ipwd_print_help(void);
 
 /* message.c */
 void ipwd_message(char *msg, int type);
+

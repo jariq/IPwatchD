@@ -1,5 +1,5 @@
-/* IPwatchD - IP conflict detection in Linux systems
- * Copyright (C) 2007 Jaroslav Imrich <jariq@jariq.sk>
+/* IPwatchD - IP conflict detection tool for Linux
+ * Copyright (C) 2007 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -94,7 +94,7 @@ int ipwd_read_config(char *filename) {
       return(IPWD_RV_ERROR);
     }
     
-	/* Check if device is valid ethernet device */
+    /* Check if device is valid ethernet device */
     h_pcap = pcap_open_live(device, BUFSIZ, 0, 0, errbuf);
     if (h_pcap == NULL) {
       snprintf(msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD is unable to work with device \"%s\".\n", device);
@@ -147,3 +147,4 @@ int ipwd_read_config(char *filename) {
   return(IPWD_RV_SUCCESS);
 
 }
+

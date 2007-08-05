@@ -1,6 +1,6 @@
-/* IPwatchD - IP conflict detection in Linux systems
- * Copyright (C) 2007 Jaroslav Imrich <jariq@jariq.sk>
- * 
+/* IPwatchD - IP conflict detection tool for Linux
+ * Copyright (C) 2007 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * version 2 as published by the Free Software Foundation.
@@ -43,54 +43,55 @@ void ipwd_message(char *msg, int type) {
   /* IPwatchD running in normal mode */
   } else {
   	
-  	/* In daemon mode - must record messages by syslog */
-  	if (syslog_flag) {
-  		
-  	  switch (type) {
+    /* In daemon mode - must record messages by syslog */
+    if (syslog_flag) {
+    
+      switch (type) {
   	  	
-  	    case IPWD_MSG_INFO:
-  		  syslog(LOG_INFO, msg);
-  		  break;
-  		
+        case IPWD_MSG_INFO:
+          syslog(LOG_INFO, msg);
+          break;
+	  
         case IPWD_MSG_ERROR:
-  		  syslog(LOG_ERR, msg);
-  		  break;	
-  		
-  		case IPWD_MSG_ALERT:
-  		  syslog(LOG_ALERT, msg);
-  		  break;
-  		    
-  		default:	
-  		  syslog(LOG_ERR, msg);
-  		  break;
-  	  
-  	  }
-  		
-   	/* Not daemon yet - messages can be printed to terminal */	
-  	} else {
-  
-  	  switch (type) {
-  	  
-  	    case IPWD_MSG_INFO:
-  		  fprintf(stdout, "%s", msg);
-  		  break;
-  		
-  		case IPWD_MSG_ERROR:
-  		  fprintf(stderr, "%s", msg);
-  		  break;	
-  		
-  		case IPWD_MSG_ALERT:
-  		  fprintf(stderr, "%s", msg);
-  		  break;
-  		    
-  		default:	
-  		  fprintf(stderr, "%s", msg);
-  		  break;
-  		      		
+          syslog(LOG_ERR, msg);
+          break;
+
+        case IPWD_MSG_ALERT:
+          syslog(LOG_ALERT, msg);
+          break;
+	  
+	default:
+          syslog(LOG_ERR, msg);
+          break;
+	  
       }
 
-  	}
-  	
+    /* Not daemon yet - messages can be printed to terminal */	
+    } else {
+  
+      switch (type) {
+        
+        case IPWD_MSG_INFO:
+          fprintf(stdout, "%s", msg);
+          break;
+	  
+        case IPWD_MSG_ERROR:
+          fprintf(stderr, "%s", msg);
+          break;
+	  
+        case IPWD_MSG_ALERT:
+          fprintf(stderr, "%s", msg);
+          break;
+	  
+        default:
+          fprintf(stderr, "%s", msg);
+          break;
+	  
+      }
+
+    }
+
   }  
 
 }
+
