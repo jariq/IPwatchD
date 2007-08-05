@@ -1,0 +1,34 @@
+IPwatchD 1.0 requirements
+-------------------------
+
+To build IPwatchD from source code you will need gcc (C compiler),
+libpcap (network packet capture library) and libnet1 (network
+packet construction library) installed in your system.
+
+On Ubuntu 7.04 it should be enough to install three packages:
+build-essential, libpcap-dev and libnet1-dev.
+
+
+IPwatchD 1.0 installation
+-------------------------
+
+Download IPwatchD 1.0 source from sourceforge project page.
+
+Extract code and build it:
+$ bunzip2 ipwatchd-1.0.tar.bz2
+$ tar -xf ipwatchd-1.0.tar
+$ cd ipwatchd-1.0/src
+$ make
+
+Install IPwatchD as a root with command:
+# make install
+
+IPwatchD executable is installed into /usr/local/sbin
+and the configuration file is copied into /usr/local/etc.
+
+Edit configuration file /usr/local/etc/ipwatchd.conf with
+your favourite editor to suite your needs.
+
+Run IPwatchD as root with command:
+# /usr/local/sbin/ipwatchd -c /usr/local/etc/ipwatchd.conf
+
