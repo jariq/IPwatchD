@@ -1,6 +1,6 @@
-/* IPwatchD - IP conflict detection in Linux systems
- * Copyright (C) 2007 Jaroslav Imrich <jariq@jariq.sk>
- * 
+/* IPwatchD - IP conflict detection tool for Linux
+ * Copyright (C) 2007 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * version 2 as published by the Free Software Foundation.
@@ -222,7 +222,7 @@ void ipwd_signal_sigint() {
 /* Prints help to the stdout */
 void ipwd_print_help(void) {
 
-  printf("IPwatchD - IP conflict detection in Linux systems\n");
+  printf("IPwatchD - IP conflict detection tool for Linux\n");
   printf("\n");
   printf("Usage: ipwatchd --config config_file [--debug]\n");
   printf("\n");
@@ -234,12 +234,18 @@ void ipwd_print_help(void) {
   printf("  --version               - Prints program version\n"); 
   printf("  --help                  - Displays this help message\n");
   printf("\n");
-  printf("If IPwatchD running in active mode (default) detects gratuitous\n");
-  printf("ARP request with IP address of monitored interface (IP conflict)\n");
-  printf("it immediately sends ARP reply to the conflicting host and also\n");
-  printf("gratuitous ARP request to update cache of neighbouring hosts\n");
-  printf("on local network.\n");
+
+  printf("IPwatchD is simple daemon that uses pcap library to capture\n");
+  printf("all  incoming  ARP  packets. It  then  compares  IP and MAC\n");
+  printf("addresses from  packets with addresses of local  interfaces\n");
+  printf("trying to detect IP conflict.  IPwatchD can operate on each\n");
+  printf("network interface in two modes – passive and active.\n");
+  printf("In passive mode it just generates syslog events.  In active\n");
+  printf("mode  it  also  answers  Gratuitous  ARP  request and sends\n");
+  printf("following  Gratuitous  ARP  requests to update ARP cache of\n");
+  printf("neighboring hosts with correct data.\n");
   printf("\n");
   printf("Please send any bug reports to jariq@jariq.sk\n");
   
 }
+

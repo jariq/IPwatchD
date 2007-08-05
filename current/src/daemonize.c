@@ -1,5 +1,5 @@
-/* IPwatchD - IP conflict detection in Linux systems
- * Copyright (C) 2007 Jaroslav Imrich <jariq@jariq.sk>
+/* IPwatchD - IP conflict detection tool for Linux
+ * Copyright (C) 2007 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -89,3 +89,4 @@ int ipwd_daemonize(void) {
   return(IPWD_RV_SUCCESS);
   
 }
+
