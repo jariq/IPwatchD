@@ -166,8 +166,9 @@ int main(int argc, char *argv[]) {
     return(IPWD_RV_ERROR);
   }
 
-  /* Set SIGINT handler */
-  signal(SIGINT, ipwd_signal_sigint);
+  /* Set SIGINT and SIGTERM handler */
+  signal(SIGINT, ipwd_signal_handler);
+  signal(SIGTERM, ipwd_signal_handler);
 
   /* Compile packet capture filter - only ARP packets will be captured */
   if (pcap_compile(h_pcap, &fp, "arp", 0, 0) == -1) {
@@ -206,12 +207,12 @@ int main(int argc, char *argv[]) {
 }
 
 
-/* SIGINT handler - called when SIGINT received */
-void ipwd_signal_sigint() {
-  
+/* SIGINT handler - called when SIGINT or SIGTERM received */
+void ipwd_signal_handler(int signal) {
+
   if (debug_flag) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "SIGINT received.\n");
-    ipwd_message(msgbuf, IPWD_MSG_INFO);  	
+    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Signal #%d received.\n", signal);
+    ipwd_message(msgbuf, IPWD_MSG_INFO);
   }
 
   pcap_close(h_pcap);
