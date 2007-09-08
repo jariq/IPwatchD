@@ -105,7 +105,7 @@ int ipwd_devinfo(char *p_dev, char *p_ip, char *p_mac);
 int ipwd_genarp(char *dev, char *p_sip, char *p_smac, char *p_dip, char *p_dmac, int opcode);
 
 /* ipwatchd.c */
-void ipwd_signal_sigint();
+void ipwd_signal_handler(int signal);
 void ipwd_print_help(void);
 
 /* message.c */
