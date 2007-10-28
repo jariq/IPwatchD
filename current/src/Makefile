@@ -3,9 +3,9 @@ CFLAGS= -Wall -O2
 LIBS= -lpcap -lnet
 
 
-all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o
-	$(CC) $(CFLAGS) $(LIBS) analyse.o config.o daemonize.o devinfo.o genarp.o \
-	  ipwatchd.o message.o -o ipwatchd
+all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
+	$(CC) $(CFLAGS) analyse.o config.o daemonize.o devinfo.o genarp.o \
+	ipwatchd.o message.o signal.o -o ipwatchd $(LIBS)
 
 analyse.o: analyse.c ipwatchd.h
 	$(CC) $(CFLAGS) -c analyse.c -o analyse.o
@@ -28,11 +28,14 @@ ipwatchd.o: ipwatchd.c ipwatchd.h
 message.o: message.c ipwatchd.h
 	$(CC) $(CFLAGS) -c message.c -o message.o
 
+signal.o: signal.c ipwatchd.h
+	$(CC) $(CFLAGS) -c signal.c -o signal.o
+
 
 clean:
 	-rm *.o
 
-mrproper:
+distclean:
 	-rm *.o ipwatchd
 
 
