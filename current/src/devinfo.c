@@ -36,63 +36,61 @@ extern char  msgbuf[IPWD_MSG_BUFSIZ];  /* Buffer for output messages */
  */
 
 int ipwd_devinfo(char *p_dev, char *p_ip, char *p_mac) {
-
-  /* Create UDP socket */
-  int sock = -1;
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  if (sock < 0) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not open socket.\n");
-    ipwd_message(msgbuf, IPWD_MSG_ERROR);
-    return(IPWD_RV_ERROR);
-  }
-
-  struct ifreq ifr;
-  ifr.ifr_addr.sa_family = AF_INET;
-  strcpy(ifr.ifr_name, p_dev);
-
-  /* Get IP address of interface */
-  if (ioctl(sock, SIOCGIFADDR, &ifr) < 0) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not retrieve IP address of %s.\n", p_dev);
-    ipwd_message(msgbuf, IPWD_MSG_ERROR);
-    return(IPWD_RV_ERROR);
-  }
-
-  char *p_dev_ip = NULL;
- 
-  if ((p_dev_ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr)) == NULL) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not convert IP address of %s.\n", p_dev);
-    ipwd_message(msgbuf, IPWD_MSG_ERROR);
-    return(IPWD_RV_ERROR);
-  }
-  
-  strcpy(p_ip, p_dev_ip);
-  
-  /* Get MAC address of interface */
-  if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not retrieve IP address of %s.\n", p_dev);
-    ipwd_message(msgbuf, IPWD_MSG_ERROR);
-    return(IPWD_RV_ERROR);
-  }
-
-  char *p_dev_mac = NULL;
-  
-  if ((p_dev_mac = ether_ntoa((const struct ether_addr *)&ifr.ifr_hwaddr.sa_data[0])) == NULL) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not convert IP address of %s.\n", p_dev);
-    ipwd_message(msgbuf, IPWD_MSG_ERROR);
-    return(IPWD_RV_ERROR);
-  }  
-
-  strcpy(p_mac, p_dev_mac);
-
-  /* Close socket */
-  close(sock);
-
-  if (debug_flag) {
-    snprintf(msgbuf, IPWD_MSG_BUFSIZ, "DEVICE INFO: %s %s|%s\n", p_dev, p_ip, p_mac);
-    ipwd_message(msgbuf, IPWD_MSG_INFO);
-  }
-
-  return(IPWD_RV_SUCCESS);
-
+	
+	/* Create UDP socket */
+	int sock = -1;
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock < 0) {
+		snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not open socket");
+		ipwd_message(msgbuf, IPWD_MSG_ERROR);
+		return(IPWD_RV_ERROR);
+	}
+	
+	struct ifreq ifr;
+	ifr.ifr_addr.sa_family = AF_INET;
+	strcpy(ifr.ifr_name, p_dev);
+	
+	/* Get IP address of interface */
+	if (ioctl(sock, SIOCGIFADDR, &ifr) < 0) {
+		snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not retrieve IP address of the device \"%s\"", p_dev);
+		ipwd_message(msgbuf, IPWD_MSG_ERROR);
+		return(IPWD_RV_ERROR);
+	}
+	
+	char *p_dev_ip = NULL;
+	
+	if ((p_dev_ip = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr)) == NULL) {
+		snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not convert IP address of the device \"%s\"", p_dev);
+		ipwd_message(msgbuf, IPWD_MSG_ERROR);
+		return(IPWD_RV_ERROR);
+	}
+	
+	strcpy(p_ip, p_dev_ip);
+	
+	/* Get MAC address of interface */
+	if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
+		snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not retrieve IP address of the device \"%s\"", p_dev);
+		ipwd_message(msgbuf, IPWD_MSG_ERROR);
+		return(IPWD_RV_ERROR);
+	}
+	
+	char *p_dev_mac = NULL;
+	
+	if ((p_dev_mac = ether_ntoa((const struct ether_addr *)&ifr.ifr_hwaddr.sa_data[0])) == NULL) {
+		snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Could not convert IP address of the device \"%s\"", p_dev);
+		ipwd_message(msgbuf, IPWD_MSG_ERROR);
+		return(IPWD_RV_ERROR);
+	}
+	
+	strcpy(p_mac, p_dev_mac);
+	
+	/* Close socket */
+	close(sock);
+	
+	snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Device info: %s %s-%s", p_dev, p_ip, p_mac);
+	ipwd_message(msgbuf, IPWD_MSG_DEBUG);
+	
+	return(IPWD_RV_SUCCESS);
+	
 }
 

@@ -34,64 +34,66 @@ extern int syslog_flag;
  */
  
 void ipwd_message(char *msg, int type) {
+	
+	/* In daemon mode - must record messages by syslog */
+	if (syslog_flag) {
 
-  /* IPwatchD running in debug mode prints all messages to STDOUT */
-  if (debug_flag) {
-  	
-    fprintf(stdout, "%s", msg);
-  
-  /* IPwatchD running in normal mode */
-  } else {
-  	
-    /* In daemon mode - must record messages by syslog */
-    if (syslog_flag) {
-    
-      switch (type) {
-  	  	
-        case IPWD_MSG_INFO:
-          syslog(LOG_INFO, msg);
-          break;
-	  
-        case IPWD_MSG_ERROR:
-          syslog(LOG_ERR, msg);
-          break;
+		switch (type) {
 
-        case IPWD_MSG_ALERT:
-          syslog(LOG_ALERT, msg);
-          break;
-	  
-	default:
-          syslog(LOG_ERR, msg);
-          break;
-	  
-      }
-
-    /* Not daemon yet - messages can be printed to terminal */	
-    } else {
-  
-      switch (type) {
-        
-        case IPWD_MSG_INFO:
-          fprintf(stdout, "%s", msg);
-          break;
-	  
-        case IPWD_MSG_ERROR:
-          fprintf(stderr, "%s", msg);
-          break;
-	  
-        case IPWD_MSG_ALERT:
-          fprintf(stderr, "%s", msg);
-          break;
-	  
-        default:
-          fprintf(stderr, "%s", msg);
-          break;
-	  
-      }
-
-    }
-
-  }  
-
+			case IPWD_MSG_INFO:
+				syslog(LOG_INFO, msg);
+				break;
+			
+			case IPWD_MSG_ERROR:
+				syslog(LOG_ERR, msg);
+				break;
+			
+			case IPWD_MSG_ALERT:
+				syslog(LOG_ALERT, msg);
+				break;
+			
+			case IPWD_MSG_DEBUG:
+				if (debug_flag) {
+					syslog(LOG_DEBUG, msg);
+				}
+				break;
+			
+			default:
+				syslog(LOG_ERR, msg);
+				break;
+			
+		}
+			
+	/* Not daemon yet - messages can be printed to terminal */	
+	} else {
+		
+		switch (type) {
+			
+			case IPWD_MSG_INFO:
+				fprintf(stdout, "%s\n", msg);
+				break;
+			
+			case IPWD_MSG_ERROR:
+				fprintf(stderr, "%s\n", msg);
+				break;
+			
+			case IPWD_MSG_ALERT:
+				fprintf(stderr, "%s\n", msg);
+				break;
+			
+			case IPWD_MSG_DEBUG:
+				if (debug_flag) {
+					fprintf(stdout, "%s\n", msg);
+				}
+				break;
+			
+			default:
+				fprintf(stderr, "%s\n", msg);
+				break;
+			
+		}
+			
+	}
+	
 }
 

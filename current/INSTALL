@@ -1,5 +1,5 @@
-IPwatchD 1.0 requirements
--------------------------
+IPwatchD requirements
+---------------------
 
 To build IPwatchD from source code you will need gcc (C compiler),
 libpcap (network packet capture library) and libnet1 (network
@@ -9,8 +9,8 @@ On Ubuntu 7.04 it should be enough to install three packages:
 build-essential, libpcap-dev and libnet1-dev.
 
 
-IPwatchD 1.0 installation
--------------------------
+IPwatchD installation
+---------------------
 
 Download IPwatchD 1.0 source from sourceforge project page.
 
