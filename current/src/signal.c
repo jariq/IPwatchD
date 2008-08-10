@@ -16,51 +16,57 @@
  * MA  02110-1301, USA.
  */
 
+/** \file signal.c
+ * \brief Contains logic used for signal handling
+ */
+
 
 #include "ipwatchd.h"
 
 
-extern int   debug_flag;		/* Flag indicating debug mode */
-extern char  msgbuf[IPWD_MSG_BUFSIZ];	/* Buffer for output messages */
-extern pcap_t *h_pcap;			/* Handle for libpcap */
+extern char msgbuf[IPWD_MSG_BUFSIZ];
+extern pcap_t *h_pcap;
 
 
-/* ipwd_set_signal_handler - sets signal handler for SIGTERM
+//! Sets signal handler for SIGTERM
+/*!
+ * \return IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise
  */
-
-int ipwd_set_signal_handler(void) {
+int ipwd_set_signal_handler (void)
+{
 
 	struct sigaction sigact;
 
-	sigemptyset(&sigact.sa_mask);
+	sigemptyset (&sigact.sa_mask);
 	sigact.sa_flags = 0;
 	sigact.sa_handler = ipwd_signal_handler;
-	
-	if (sigaction(SIGTERM, &sigact, 0) != 0) {
-        	snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Unable to set SIGTERM handler");
-	        ipwd_message(msgbuf, IPWD_MSG_ERROR);
-		return(IPWD_RV_ERROR);
+
+	if (sigaction (SIGTERM, &sigact, 0) != 0)
+	{
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to set SIGTERM handler");
+		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		return (IPWD_RV_ERROR);
 	}
 
-	return(IPWD_RV_SUCCESS);
+	return (IPWD_RV_SUCCESS);
 
 }
 
 
-/* ipwd_signal_handler - called when signal received
- *
- * Parameters:
- *   - signal - signal identifier
+//! Signal handler that is called when signal received
+/*!
+ * \param signal Signal identifier
  */
+void ipwd_signal_handler (int signal)
+{
 
-void ipwd_signal_handler(int signal) {
-	
-	snprintf(msgbuf, IPWD_MSG_BUFSIZ, "Received signal %d", signal);
-	ipwd_message(msgbuf, IPWD_MSG_DEBUG);
-	
-	if (signal == SIGTERM) {
-		pcap_close(h_pcap);
+	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Received signal %d", signal);
+	ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+
+	if (signal == SIGTERM)
+	{
+		pcap_close (h_pcap);
 	}
-	
+
 }
 
