@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -113,10 +113,8 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		/* Check if received packet causes conflict with IP address of this interface */
 		if ((strcmp (rcv_sip, devices.dev[i].ip) == 0) && (strcmp (rcv_smac, devices.dev[i].mac) != 0))
 		{
-
 			if (devices.dev[i].mode == IPWD_MODE_ACTIVE)
 			{
-
 				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - active mode - reply sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 				ipwd_message (msgbuf, IPWD_MSG_ALERT);
 
@@ -125,23 +123,24 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 				/* Send GARP request to update cache of our neighbours */
 				ipwd_genarp (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac, devices.dev[i].ip, "ff:ff:ff:ff:ff:ff", ARPOP_REQUEST);
-
 			}
 			else
 			{
-
 				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent",	rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 				ipwd_message (msgbuf, IPWD_MSG_ALERT);
-
 			}
+
+#ifdef WITH_DESKTOP_NOTIFICATION
+			/* Show desktop pop-up notification with libnotify */
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s",	rcv_smac, devices.dev[i].ip, devices.dev[i].device);
+			ipwd_desktop_notification (msgbuf);
+#endif
 
 		}
 		else
 		{
-
 			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Packet does not conflict with: %s %s-%s", devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac);
 			ipwd_message (msgbuf, IPWD_MSG_DEBUG);
-
 		}
 
 	}

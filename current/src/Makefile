@@ -1,20 +1,36 @@
+# IPwatchD - IP conflict detection tool for Linux
+# Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+
 CC= gcc
 CFLAGS= -Wall -O2
 LIBS= -lpcap -lnet
+LIBNOTIFY_CFLAGS=`pkg-config --cflags libnotify`
+LIBNOTIFY_LIBS=`pkg-config --libs libnotify`
 
 
-all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
+all: analyse-wdn.o config.o daemonize.o desktop.o devinfo.o genarp.o ipwatchd.o message.o signal.o
+	$(CC) $(CFLAGS) analyse-wdn.o config.o daemonize.o desktop.o devinfo.o genarp.o \
+	ipwatchd.o message.o signal.o -o ipwatchd $(LIBS) $(LIBNOTIFY_LIBS)
+
+daemon: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
 	$(CC) $(CFLAGS) analyse.o config.o daemonize.o devinfo.o genarp.o \
 	ipwatchd.o message.o signal.o -o ipwatchd $(LIBS)
 
+
 analyse.o: analyse.c ipwatchd.h
 	$(CC) $(CFLAGS) -c analyse.c -o analyse.o
+
+analyse-wdn.o: analyse.c ipwatchd.h
+	$(CC) $(CFLAGS) -DWITH_DESKTOP_NOTIFICATION -c analyse.c -o analyse-wdn.o
 
 config.o: config.c ipwatchd.h
 	$(CC) $(CFLAGS) -c config.c -o config.o
 
 daemonize.o: daemonize.c ipwatchd.h
 	$(CC) $(CFLAGS) -c daemonize.c -o daemonize.o
+
+desktop.o: desktop.c ipwatchd.h
+	$(CC) $(CFLAGS) $(LIBNOTIFY_CFLAGS) -c desktop.c -o desktop.o
 
 devinfo.o: devinfo.c ipwatchd.h
 	$(CC) $(CFLAGS) -c devinfo.c -o devinfo.o
@@ -33,17 +49,20 @@ signal.o: signal.c ipwatchd.h
 
 
 clean:
-	-rm *.o
+	-rm -f *.o
 
 distclean:
-	-rm *.o ipwatchd
+	-rm -f *.o ipwatchd
 
 
 install:
 	cp ipwatchd /usr/local/sbin
 	cp ipwatchd.conf /usr/local/etc
+	mkdir -p /usr/local/share/man/man8
+	cp ../doc/ipwatchd.8.gz /usr/local/share/man/man8
 
 uninstall:
-	rm /usr/local/sbin/ipwatchd
-	rm /usr/local/etc/ipwatchd.conf
+	rm -f /usr/local/sbin/ipwatchd
+	rm -f /usr/local/etc/ipwatchd.conf
+	rm -f /usr/local/share/man/man8/ipwatchd.8.gz
 

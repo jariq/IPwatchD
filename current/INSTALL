@@ -1,29 +1,59 @@
 IPwatchD requirements
 ---------------------
 
-To build IPwatchD from source code you will need gcc (C compiler),
-libpcap (network packet capture library) and libnet1 (network
-packet construction library) installed in your system.
+IPwatchD can be built as a pure daemon (useful for servers without
+X Window System) or with desktop notification support.
 
-On Ubuntu 7.04 it should be enough to install three packages:
-build-essential, libpcap-dev and libnet1-dev.
+To build IPwatchD from source code you will need gcc, libpcap 
+and libnet1 installed in your system. For desktop notification 
+support you will also need libnotify.
+
+On Ubuntu 8.04 it should be sufficient to install following packages:
+
+  - build-essential - C compiler and other development tools
+  - libpcap-dev     - Network packet capture library
+  - libnet1-dev     - Network packet construction library
+  - libnotify-dev   - Desktop notification library
 
 
-IPwatchD installation
----------------------
+Building IPwatchD as a pure daemon
+----------------------------------
 
-Download IPwatchD 1.0 source from sourceforge project page.
+Download IPwatchD source from sourceforge project page.
 
 Extract code and build it:
-$ bunzip2 ipwatchd-1.0.tar.bz2
-$ tar -xf ipwatchd-1.0.tar
-$ cd ipwatchd-1.0/src
+$ bunzip2 ipwatchd-x.x.tar.bz2
+$ tar -xf ipwatchd-x.x.tar
+$ cd ipwatchd-x.x/src
+$ make daemon
+
+
+Building IPwatchD with desktop notification support
+---------------------------------------------------
+
+Download IPwatchD source from sourceforge project page.
+
+Extract code and build it:
+$ bunzip2 ipwatchd-x.x.tar.bz2
+$ tar -xf ipwatchd-x.x.tar
+$ cd ipwatchd-x.x/src
 $ make
 
-Install IPwatchD as a root with command:
+
+IPwatchD installation and uninstallation
+----------------------------------------
+
+You can install IPwatchD as root with command:
 # make install
 
-IPwatchD executable is installed into /usr/local/sbin
+You can uninstall IPwatchD as root with command:
+# make uninstall
+
+
+IPwatchD configuration
+----------------------
+
+IPwatchD executable is copied into /usr/local/sbin
 and the configuration file is copied into /usr/local/etc.
 
 Edit configuration file /usr/local/etc/ipwatchd.conf with
@@ -31,4 +61,6 @@ your favourite editor to suite your needs.
 
 Run IPwatchD as root with command:
 # /usr/local/sbin/ipwatchd -c /usr/local/etc/ipwatchd.conf
+
+For more information please read "ipwatchd" manual page.
 
