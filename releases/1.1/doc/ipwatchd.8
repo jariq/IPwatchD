@@ -1,0 +1,48 @@
+.TH IPWATCHD 8
+.SH NAME
+IPwatchD \- IP conflict detection tool for Linux
+.SH SYNOPSIS
+.B ipwatchd --config 
+.I config_file
+.B [\-\-debug]
+.br
+.B ipwatchd \-\-version
+.br
+.B ipwatchd \-\-help
+.SH DESCRIPTION
+IPwatchD is simple daemon that uses libpcap to detect IP conflict on Linux. It can be configured to listen on one or more interfaces (alias interfaces are also supported) in active or passive mode. In active mode IPwatchD protects your host before IP takeover by answering Gratuitous ARP requests received from conflicting system. In passive mode it just records information about conflict through standard syslog interface.
+.SH OPTIONS
+The following options are supported:
+.TP
+.B "\-c \-\-config"
+Specifies path to configuration file.
+.TP
+.B "\-d \-\-debug"
+Enables debug mode. Debug information are recorded through syslog with facility set to "daemon" and priority set to "debug".
+.TP
+.B "\-v \-\-version"
+Prints program version to standard output.
+.TP
+.B "\-h \-\-help"
+Prints short help information to standard output.
+.SH EXAMPLE
+Every line starting with a hash mark ('#') in IPwatchD configuration file is considered to be a comment. Every uncommented line must start with a name of the network interface followed by at least one space or tab and requested mode for interface.
+.PP
+IPwatchD can operate on each network interface in one of two modes. In
+.B passive
+mode it just generates syslog events. In 
+.B active
+mode it also answers Gratuitous ARP request and sends following Gratuitous ARP requests to update ARP cache of neighboring hosts with correct data.
+
+# Example configuration file
+.br
+eth0   active
+.br
+eth0:0 passive
+.SH AUTHOR
+This manual page was written by Jaroslav Imrich <jariq@jariq.sk>
+.SH SEE ALSO
+More information about IP conflict detection can be found on 
+.UR http://ipwatchd.sf.net
+http://ipwatchd.sf.net
+.UE

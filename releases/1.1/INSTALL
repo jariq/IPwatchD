@@ -1,0 +1,66 @@
+IPwatchD requirements
+---------------------
+
+IPwatchD can be built as a pure daemon (useful for servers without
+X Window System) or with desktop notification support.
+
+To build IPwatchD from source code you will need gcc, libpcap 
+and libnet1 installed in your system. For desktop notification 
+support you will also need libnotify.
+
+On Ubuntu 8.04 it should be sufficient to install following packages:
+
+  - build-essential - C compiler and other development tools
+  - libpcap-dev     - Network packet capture library
+  - libnet1-dev     - Network packet construction library
+  - libnotify-dev   - Desktop notification library
+
+
+Building IPwatchD as a pure daemon
+----------------------------------
+
+Download IPwatchD source from sourceforge project page.
+
+Extract code and build it:
+$ bunzip2 ipwatchd-x.x.tar.bz2
+$ tar -xf ipwatchd-x.x.tar
+$ cd ipwatchd-x.x/src
+$ make daemon
+
+
+Building IPwatchD with desktop notification support
+---------------------------------------------------
+
+Download IPwatchD source from sourceforge project page.
+
+Extract code and build it:
+$ bunzip2 ipwatchd-x.x.tar.bz2
+$ tar -xf ipwatchd-x.x.tar
+$ cd ipwatchd-x.x/src
+$ make
+
+
+IPwatchD installation and uninstallation
+----------------------------------------
+
+You can install IPwatchD as root with command:
+# make install
+
+You can uninstall IPwatchD as root with command:
+# make uninstall
+
+
+IPwatchD configuration
+----------------------
+
+IPwatchD executable is copied into /usr/local/sbin
+and the configuration file is copied into /usr/local/etc.
+
+Edit configuration file /usr/local/etc/ipwatchd.conf with
+your favourite editor to suite your needs.
+
+Run IPwatchD as root with command:
+# /usr/local/sbin/ipwatchd -c /usr/local/etc/ipwatchd.conf
+
+For more information please read "ipwatchd" manual page.
+
