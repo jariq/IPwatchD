@@ -32,6 +32,9 @@ int syslog_flag = 0;
 //! Structure that holds information about network interfaces
 IPWD_S_DEVS devices;
 
+//! Structure that holds information about available D-BUS buses
+IPWD_S_BUSES buses;
+
 //! Buffer for output messages
 char msgbuf[IPWD_MSG_BUFSIZ];
 
@@ -39,7 +42,7 @@ char msgbuf[IPWD_MSG_BUFSIZ];
 pcap_t *h_pcap = NULL;
 
 
-//! Main function of the program
+//! Main function of the ipwatchd program
 /*!
  * \param argc Number of received command line arguments
  * \param argv Argument values

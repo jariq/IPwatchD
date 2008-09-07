@@ -28,6 +28,12 @@
 <code>#include &lt;netinet/in.h&gt;</code><br>
 <code>#include &lt;arpa/inet.h&gt;</code><br>
 <code>#include &lt;sys/ioctl.h&gt;</code><br>
+<code>#include &lt;sys/types.h&gt;</code><br>
+<code>#include &lt;dirent.h&gt;</code><br>
+<code>#include &lt;stdlib.h&gt;</code><br>
+<code>#include &lt;sys/stat.h&gt;</code><br>
+<code>#include &lt;fcntl.h&gt;</code><br>
+<code>#include &lt;pwd.h&gt;</code><br>
 <code>#include &lt;libnet.h&gt;</code><br>
 <code>#include &lt;pcap.h&gt;</code><br>
 <table border="0" cellpadding="0" cellspacing="0">
@@ -39,11 +45,17 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structIPWD__S__DEVS.html">IPWD_S_DEVS</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure that holds information about ALL network interfaces.  <a href="structIPWD__S__DEVS.html#_details">More...</a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structIPWD__S__BUS.html">IPWD_S_BUS</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure that holds information about ONE D-BUS bus.  <a href="structIPWD__S__BUS.html#_details">More...</a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structIPWD__S__BUSES.html">IPWD_S_BUSES</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure that holds information about ALL found D-BUS buses.  <a href="structIPWD__S__BUSES.html#_details">More...</a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structIPWD__S__ARP__HEADER.html">IPWD_S_ARP_HEADER</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure useful for parsing of individual addresses from packet.  <a href="structIPWD__S__ARP__HEADER.html#_details">More...</a><br></td></tr>
 <tr><td colspan="2"><br><h2>Defines</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8h.html#3b3b3ba572604dbda0f66f8a70d15ef2">IPWATCHD_VERSION</a>&nbsp;&nbsp;&nbsp;&quot;IPwatchD 1.0.1&quot;</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8h.html#3b3b3ba572604dbda0f66f8a70d15ef2">IPWATCHD_VERSION</a>&nbsp;&nbsp;&nbsp;&quot;IPwatchD 1.1&quot;</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">String with IPwatchD version information.  <a href="#3b3b3ba572604dbda0f66f8a70d15ef2"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8h.html#d8903198bcdaa4e1b752b50b59238dd7">IPWD_RV_SUCCESS</a>&nbsp;&nbsp;&nbsp;0</td></tr>
@@ -67,6 +79,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8h.html#bf2ccac3669b3cb5ec0bebbec3114e3e">IPWD_MSG_DEBUG</a>&nbsp;&nbsp;&nbsp;4</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Message type: debug.  <a href="#bf2ccac3669b3cb5ec0bebbec3114e3e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8h.html#bdd62d003d20f1e3982035c263bd869f">IPWD_FILE_BUFSIZ</a>&nbsp;&nbsp;&nbsp;1000</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Size of buffer used for reading content of files.  <a href="#bdd62d003d20f1e3982035c263bd869f"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">#define&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8h.html#2731e36c45c81783b400dfeec1e41b5b">IPWD_MODE_ACTIVE</a>&nbsp;&nbsp;&nbsp;1</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Indicates that IPwatchD should operate in active mode on selected device.  <a href="#2731e36c45c81783b400dfeec1e41b5b"></a><br></td></tr>
@@ -86,7 +101,7 @@ Main header file of the project.
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define IPWATCHD_VERSION&nbsp;&nbsp;&nbsp;&quot;IPwatchD 1.0.1&quot;          </td>
+          <td class="memname">#define IPWATCHD_VERSION&nbsp;&nbsp;&nbsp;&quot;IPwatchD 1.1&quot;          </td>
         </tr>
       </table>
 </div>
@@ -113,6 +128,23 @@ String with IPwatchD version information.
 Number of useless bytes in ARP packet. 
 <p>
 Parsing of packets captured by libpcap on pseudo device "any" seems to be slightly different than parsing of packets captured on one particular interface. Instead of usual 14th byte addresses begin on 24th byte of ARP header. 
+</div>
+</div><p>
+<a class="anchor" name="bdd62d003d20f1e3982035c263bd869f"></a><!-- doxytag: member="ipwatchd.h::IPWD_FILE_BUFSIZ" ref="bdd62d003d20f1e3982035c263bd869f" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IPWD_FILE_BUFSIZ&nbsp;&nbsp;&nbsp;1000          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Size of buffer used for reading content of files. 
+<p>
+
 </div>
 </div><p>
 <a class="anchor" name="2731e36c45c81783b400dfeec1e41b5b"></a><!-- doxytag: member="ipwatchd.h::IPWD_MODE_ACTIVE" ref="2731e36c45c81783b400dfeec1e41b5b" args="" -->
@@ -269,7 +301,7 @@ Message type: information.
 </div>
 </div><p>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Tue Aug 12 16:23:50 2008 for IPwatchD by&nbsp;
+<hr size="1"><address style="text-align: right;"><small>Generated on Sun Sep 7 12:48:42 2008 for IPwatchD by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.5 </small></address>
 </body>
