@@ -23,7 +23,7 @@
 <tr><td colspan="2"><br><h2>Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8c.html#0ddf1224851353fc92bfbff6f499fa97">main</a> (int argc, char *argv[])</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Main function of the program.  <a href="#0ddf1224851353fc92bfbff6f499fa97"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Main function of the ipwatchd program.  <a href="#0ddf1224851353fc92bfbff6f499fa97"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8c.html#6284629e73d50e3bd9e3863252af39cb">ipwd_print_help</a> (void)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Prints help to the stdout.  <a href="#6284629e73d50e3bd9e3863252af39cb"></a><br></td></tr>
@@ -37,6 +37,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structIPWD__S__DEVS.html">IPWD_S_DEVS</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8c.html#f04b0bc6412ac3b2ac424bc182fb941b">devices</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure that holds information about network interfaces.  <a href="#f04b0bc6412ac3b2ac424bc182fb941b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structIPWD__S__BUSES.html">IPWD_S_BUSES</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8c.html#f26805ee40cde0213376b66132bcece8">buses</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure that holds information about available D-BUS buses.  <a href="#f26805ee40cde0213376b66132bcece8"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="ipwatchd_8c.html#922f7099f9d0730f32f7ba8586551ea2">msgbuf</a> [IPWD_MSG_BUFSIZ]</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Buffer for output messages.  <a href="#922f7099f9d0730f32f7ba8586551ea2"></a><br></td></tr>
@@ -96,7 +99,7 @@ Prints help to the stdout.
 <div class="memdoc">
 
 <p>
-Main function of the program. 
+Main function of the ipwatchd program. 
 <p>
 <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
@@ -109,6 +112,23 @@ Main function of the program.
 </div>
 </div><p>
 <hr><h2>Variable Documentation</h2>
+<a class="anchor" name="f26805ee40cde0213376b66132bcece8"></a><!-- doxytag: member="ipwatchd.c::buses" ref="f26805ee40cde0213376b66132bcece8" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structIPWD__S__BUSES.html">IPWD_S_BUSES</a> <a class="el" href="ipwatchd_8c.html#f26805ee40cde0213376b66132bcece8">buses</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Structure that holds information about available D-BUS buses. 
+<p>
+
+</div>
+</div><p>
 <a class="anchor" name="1cdcb95495e1d0e4fced2cd97b61fc33"></a><!-- doxytag: member="ipwatchd.c::debug_flag" ref="1cdcb95495e1d0e4fced2cd97b61fc33" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -195,7 +215,7 @@ Flag indicating that output of program must be recorded by syslog.
 </div>
 </div><p>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Tue Aug 12 16:23:50 2008 for IPwatchD by&nbsp;
+<hr size="1"><address style="text-align: right;"><small>Generated on Sun Sep 7 12:48:42 2008 for IPwatchD by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.5 </small></address>
 </body>

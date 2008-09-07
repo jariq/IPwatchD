@@ -31,6 +31,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <pwd.h>
+#include <sys/wait.h>
 #include <libnet.h>
 #include <pcap.h>
 
@@ -66,6 +73,12 @@
 #define IPWD_MSG_DEBUG   4
 
 
+/* File operation options */
+
+//! Size of buffer used for reading content of files
+#define IPWD_FILE_BUFSIZ 1000
+
+
 /* Operation modes */
 
 //! Indicates that IPwatchD should operate in active mode on selected device
@@ -94,6 +107,26 @@ typedef struct
 	int devnum;			/**< Number of watched interfaces */
 }
 IPWD_S_DEVS;
+
+
+/* Structures for D-BUS information  */
+
+//! Structure that holds information about ONE D-BUS bus
+typedef struct
+{
+	char * username;		/**< Username of bus owner */
+	uid_t uid;				/**< UID of bus owner */
+	char * dbus_address;	/**< Bus address */
+}
+IPWD_S_BUS;
+
+//! Structure that holds information about ALL found D-BUS buses
+typedef struct
+{
+	IPWD_S_BUS * bus;	/**< Dynamicaly allocated array of IPWD_S_BUS structures */
+	int bus_count;		/**< Number of found buses */
+}
+IPWD_S_BUSES;
 
 
 /* ARP packet information */
@@ -131,7 +164,12 @@ int ipwd_read_config (char *filename);
 int ipwd_daemonize (void);
 
 /* desktop.c */
-void ipwd_desktop_notification (char *message);
+void ipwd_send_desktop_notification (char *message);
+int ipwd_read_file (const char *filename, char **content);
+int ipwd_bus_entry_exists (const char *username, const char *dbus_address);
+int ipwd_create_bus_entry (const char *username, const char *dbus_address);
+int ipwd_find_buses (void);
+void ipwd_free_buses (void);
 
 /* devinfo.c */
 int ipwd_devinfo (char *p_dev, char *p_ip, char *p_mac);

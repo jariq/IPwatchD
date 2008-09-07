@@ -17,25 +17,205 @@
 <div class="contents">
 <h1>desktop.c File Reference</h1>Contains logic used for showing notification pop-ups on desktop. <a href="#_details">More...</a>
 <p>
-<code>#include &lt;libnotify/notify.h&gt;</code><br>
 <code>#include &quot;<a class="el" href="ipwatchd_8h.html">ipwatchd.h</a>&quot;</code><br>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#72067b2ed6be1b8e2c68df0db7659a6a">ipwd_desktop_notification</a> (char *message)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#9adb3338f6930fe7e250872f577d19b8">ipwd_send_desktop_notification</a> (char *message)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Shows desktop pop-up notification with libnotify.  <a href="#72067b2ed6be1b8e2c68df0db7659a6a"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Shows desktop pop-up notification with libnotify.  <a href="#9adb3338f6930fe7e250872f577d19b8"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#74dcc06cf48d9e904de5823e71c0680e">ipwd_read_file</a> (const char *filename, char **content)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Reads content of file into memory buffer.  <a href="#74dcc06cf48d9e904de5823e71c0680e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#efa15a96ee07d1aa94594203e1a90a9b">ipwd_bus_entry_exists</a> (const char *username, const char *dbus_address)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Searches in buses structure for specific bus.  <a href="#efa15a96ee07d1aa94594203e1a90a9b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#997bfdcd9bb48f2c516fbc85698c848e">ipwd_create_bus_entry</a> (const char *username, const char *dbus_address)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Creates new entry in buses structure.  <a href="#997bfdcd9bb48f2c516fbc85698c848e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#941bc7498f1a5452d7eb3f05c823aca8">ipwd_find_buses</a> (void)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Searches for available buses in /proc.  <a href="#941bc7498f1a5452d7eb3f05c823aca8"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#8c9d11b139bc2e1dc3829a1bdf053804">ipwd_free_buses</a> (void)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Removes all entries from buses structre.  <a href="#8c9d11b139bc2e1dc3829a1bdf053804"></a><br></td></tr>
+<tr><td colspan="2"><br><h2>Variables</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structIPWD__S__BUSES.html">IPWD_S_BUSES</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#f26805ee40cde0213376b66132bcece8">buses</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Structure that holds information about available D-BUS buses.  <a href="#f26805ee40cde0213376b66132bcece8"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="desktop_8c.html#922f7099f9d0730f32f7ba8586551ea2">msgbuf</a> [IPWD_MSG_BUFSIZ]</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Buffer for output messages.  <a href="#922f7099f9d0730f32f7ba8586551ea2"></a><br></td></tr>
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Contains logic used for showing notification pop-ups on desktop. 
 <p>
 <hr><h2>Function Documentation</h2>
-<a class="anchor" name="72067b2ed6be1b8e2c68df0db7659a6a"></a><!-- doxytag: member="desktop.c::ipwd_desktop_notification" ref="72067b2ed6be1b8e2c68df0db7659a6a" args="(char *message)" -->
+<a class="anchor" name="efa15a96ee07d1aa94594203e1a90a9b"></a><!-- doxytag: member="desktop.c::ipwd_bus_entry_exists" ref="efa15a96ee07d1aa94594203e1a90a9b" args="(const char *username, const char *dbus_address)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void ipwd_desktop_notification           </td>
+          <td class="memname">int ipwd_bus_entry_exists           </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>username</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>dbus_address</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Searches in buses structure for specific bus. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>username</em>&nbsp;</td><td>Username of bus owner </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dbus_address</em>&nbsp;</td><td>Address of bus </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>IPWD_RV_SUCCESS if bus is found IPWD_RV_ERROR otherwise </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="997bfdcd9bb48f2c516fbc85698c848e"></a><!-- doxytag: member="desktop.c::ipwd_create_bus_entry" ref="997bfdcd9bb48f2c516fbc85698c848e" args="(const char *username, const char *dbus_address)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ipwd_create_bus_entry           </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>username</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>dbus_address</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Creates new entry in buses structure. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>username</em>&nbsp;</td><td>Username of bus owner </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dbus_address</em>&nbsp;</td><td>Address of bus </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="941bc7498f1a5452d7eb3f05c823aca8"></a><!-- doxytag: member="desktop.c::ipwd_find_buses" ref="941bc7498f1a5452d7eb3f05c823aca8" args="(void)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ipwd_find_buses           </td>
+          <td>(</td>
+          <td class="paramtype">void&nbsp;</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Searches for available buses in /proc. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="8c9d11b139bc2e1dc3829a1bdf053804"></a><!-- doxytag: member="desktop.c::ipwd_free_buses" ref="8c9d11b139bc2e1dc3829a1bdf053804" args="(void)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ipwd_free_buses           </td>
+          <td>(</td>
+          <td class="paramtype">void&nbsp;</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Removes all entries from buses structre. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="74dcc06cf48d9e904de5823e71c0680e"></a><!-- doxytag: member="desktop.c::ipwd_read_file" ref="74dcc06cf48d9e904de5823e71c0680e" args="(const char *filename, char **content)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ipwd_read_file           </td>
+          <td>(</td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&nbsp;</td>
+          <td class="paramname"> <em>content</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Reads content of file into memory buffer. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>filename</em>&nbsp;</td><td>Name of the file </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>content</em>&nbsp;</td><td>Address of memory buffer </td></tr>
+  </table>
+</dl>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="9adb3338f6930fe7e250872f577d19b8"></a><!-- doxytag: member="desktop.c::ipwd_send_desktop_notification" ref="9adb3338f6930fe7e250872f577d19b8" args="(char *message)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ipwd_send_desktop_notification           </td>
           <td>(</td>
           <td class="paramtype">char *&nbsp;</td>
           <td class="paramname"> <em>message</em>          </td>
@@ -49,7 +229,7 @@ Contains logic used for showing notification pop-ups on desktop.
 <p>
 Shows desktop pop-up notification with libnotify. 
 <p>
-<dl compact><dt><b>Parameters:</b></dt><dd>
+Not very clean solution but it works and we have to stick to it until libnotify will be able to broadcast messages through the system bus. <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>message</em>&nbsp;</td><td>Message to be shown </td></tr>
   </table>
@@ -57,8 +237,43 @@ Shows desktop pop-up notification with libnotify.
 
 </div>
 </div><p>
+<hr><h2>Variable Documentation</h2>
+<a class="anchor" name="f26805ee40cde0213376b66132bcece8"></a><!-- doxytag: member="desktop.c::buses" ref="f26805ee40cde0213376b66132bcece8" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structIPWD__S__BUSES.html">IPWD_S_BUSES</a> <a class="el" href="ipwatchd_8c.html#f26805ee40cde0213376b66132bcece8">buses</a>          </td>
+        </tr>
+      </table>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Tue Aug 12 16:23:50 2008 for IPwatchD by&nbsp;
+<div class="memdoc">
+
+<p>
+Structure that holds information about available D-BUS buses. 
+<p>
+
+</div>
+</div><p>
+<a class="anchor" name="922f7099f9d0730f32f7ba8586551ea2"></a><!-- doxytag: member="desktop.c::msgbuf" ref="922f7099f9d0730f32f7ba8586551ea2" args="[IPWD_MSG_BUFSIZ]" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char <a class="el" href="signal_8c.html#922f7099f9d0730f32f7ba8586551ea2">msgbuf</a>[IPWD_MSG_BUFSIZ]          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Buffer for output messages. 
+<p>
+
+</div>
+</div><p>
+</div>
+<hr size="1"><address style="text-align: right;"><small>Generated on Sun Sep 7 12:48:42 2008 for IPwatchD by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.5 </small></address>
 </body>
