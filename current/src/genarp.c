@@ -177,8 +177,7 @@ int ipwd_genarp (char *dev, char *p_sip, char *p_smac, char *p_dip, char *p_dmac
 	int c = libnet_write (h_net);
 	if (c == -1)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to send packet: %s",
-		libnet_geterror (h_net));
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to send packet: %s",	libnet_geterror (h_net));
 		ipwd_message (msgbuf, IPWD_MSG_ERROR);
 		libnet_destroy (h_net);
 		return (IPWD_RV_ERROR);

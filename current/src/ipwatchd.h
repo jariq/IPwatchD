@@ -43,7 +43,7 @@
 
 
 //! String with IPwatchD version information
-#define IPWATCHD_VERSION "IPwatchD 1.1"
+#define IPWATCHD_VERSION "IPwatchD 1.1.1"
 
 
 /* Return values */

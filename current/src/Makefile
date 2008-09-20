@@ -8,9 +8,9 @@ LIBNOTIFY_CFLAGS=`pkg-config --cflags libnotify`
 LIBNOTIFY_LIBS=`pkg-config --libs libnotify`
 
 
-all: analyse-wdn.o config.o daemonize.o desktop.o devinfo.o genarp.o ipwatchd.o ipwd-notify.o message.o signal.o
+all: analyse-wdn.o config.o daemonize.o desktop.o devinfo.o genarp.o ipwatchd-wdn.o ipwd-notify.o message.o signal.o
 	$(CC) $(CFLAGS) analyse-wdn.o config.o daemonize.o desktop.o devinfo.o genarp.o \
-	ipwatchd.o message.o signal.o -o ipwatchd $(LIBS)
+	ipwatchd-wdn.o message.o signal.o -o ipwatchd $(LIBS)
 	$(CC) $(CFLAGS) ipwd-notify.o -o ipwd-notify $(LIBNOTIFY_LIBS)
 
 daemon: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
@@ -41,6 +41,9 @@ genarp.o: genarp.c ipwatchd.h
 
 ipwatchd.o: ipwatchd.c ipwatchd.h
 	$(CC) $(CFLAGS) -c ipwatchd.c -o ipwatchd.o
+
+ipwatchd-wdn.o: ipwatchd.c ipwatchd.h
+	$(CC) $(CFLAGS) -DWITH_DESKTOP_NOTIFICATION -c ipwatchd.c -o ipwatchd-wdn.o
 
 ipwd-notify.o: ipwd-notify.c
 	$(CC) $(CFLAGS) $(LIBNOTIFY_CFLAGS) -c ipwd-notify.c -o ipwd-notify.o

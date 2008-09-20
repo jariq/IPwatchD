@@ -242,6 +242,12 @@ void ipwd_print_help (void)
 {
 	fprintf (stdout, "IPwatchD - IP conflict detection tool for Linux\n");
 	fprintf (stdout, "\n");
+#ifdef WITH_DESKTOP_NOTIFICATION
+	fprintf (stdout, "Notice: Desktop notification support enabled\n");
+#else
+	fprintf (stdout, "Notice: Desktop notification support disabled\n");
+#endif
+	fprintf (stdout, "\n");
 	fprintf (stdout, "Usage: ipwatchd --config config_file [--debug]\n");
 	fprintf (stdout, "\n");
 	fprintf (stdout, "  --config config_file    - Path to configuration file\n");

@@ -40,6 +40,7 @@ void ipwd_send_desktop_notification (char *message)
 	int i = 0;
 	char command[IPWD_MSG_BUFSIZ];
 	int rv = 0;
+	int success = 0;
 
 	if (ipwd_find_buses () == IPWD_RV_ERROR)
 	{
@@ -76,10 +77,11 @@ void ipwd_send_desktop_notification (char *message)
 			rv = WEXITSTATUS(rv);
 		}
 
-		if (rv != 0) {
-			// TODO
-			// Need to rewrite logic and add something like statistics
-			// i.e. notification sent successfuly to 4 out of 10 buses
+		if (rv == 0)
+		{
+			success = success + 1;
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Desktop notification successfuly sent to %s of user %s", buses.bus[i].dbus_address, buses.bus[i].username);
+			ipwd_message (msgbuf, IPWD_MSG_DEBUG);
 		}
 
 		// Restore root privileges
@@ -92,6 +94,9 @@ void ipwd_send_desktop_notification (char *message)
 		
 	}
 	
+	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Desktop notification successfuly sent to %d of %d buses", success, buses.bus_count);
+	ipwd_message (msgbuf, IPWD_MSG_INFO);
+
 	ipwd_free_buses ();
 	
 }
@@ -229,6 +234,9 @@ int ipwd_create_bus_entry (const char *username, const char *dbus_address)
 
 	// Increase bus_count
 	buses.bus_count = buses.bus_count + 1;
+
+	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Found %s of user %s", dbus_address, username);
+	ipwd_message (msgbuf, IPWD_MSG_DEBUG);
 
 	return IPWD_RV_SUCCESS;
 }
