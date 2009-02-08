@@ -183,8 +183,36 @@ int main (int argc, char *argv[])
 	char errbuf[PCAP_ERRBUF_SIZE];
 	struct bpf_program fp;
 
+        /* Check if "any" pseudodevice is available */
+        pcap_if_t * pcap_alldevs = NULL;
+        pcap_if_t * pcap_dev = NULL;
+        int any_exists = 0;
+
+        if (pcap_findalldevs(&pcap_alldevs, errbuf))
+        {
+                snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to get network device list - %s", errbuf);
+                ipwd_message (msgbuf, IPWD_MSG_ERROR);
+                return (IPWD_RV_ERROR);
+        }
+
+        for (pcap_dev = pcap_alldevs; pcap_dev; pcap_dev = pcap_dev->next)
+        {
+                if (strcmp (pcap_dev->name, "any") == 0)
+                {
+                        any_exists = 1;
+			break;
+                }
+        }
+
+        if (!any_exists)
+        {
+                snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Pseudodevice \"any\" used by libpcap is not available");
+                ipwd_message (msgbuf, IPWD_MSG_ERROR);
+                return (IPWD_RV_ERROR);
+        }
+
 	/* Initialize libpcap and listen on all interfaces */
-	h_pcap = pcap_open_live (NULL, BUFSIZ, 0, 0, errbuf);
+	h_pcap = pcap_open_live ("any", BUFSIZ, 0, 0, errbuf);
 	if (h_pcap == NULL)
 	{
 		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to create packet capture object - %s", errbuf);
