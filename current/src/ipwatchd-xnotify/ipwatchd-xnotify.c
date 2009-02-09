@@ -176,7 +176,7 @@ void ipwdxn_print_help ()
 	printf ("\n");
     	printf ("Usage: ipwatchd-xnotify [--debug] [--broadcast] --title message_title --message message_content\n");
 	printf ("\n");
-	printf ("  --debug                    - display debugging infomration\n");
+	printf ("  --debug                    - display debugging information\n");
 	printf ("  --broadcast                - send notification to all active displays\n");
 	printf ("  --title message_title      - specifies message title\n");
 	printf ("  --message message_content  - specifies message content\n");
