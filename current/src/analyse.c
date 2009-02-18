@@ -129,14 +129,6 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent",	rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 				ipwd_message (msgbuf, IPWD_MSG_ALERT);
 			}
-
-#ifdef WITH_DESKTOP_NOTIFICATION
-			/* Show desktop pop-up notification with libnotify */
-			char desktopmsg[IPWD_MSG_BUFSIZ];
-			snprintf (desktopmsg, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s",	rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-			ipwd_send_desktop_notification (desktopmsg);
-#endif
-
 		}
 		else
 		{
