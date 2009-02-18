@@ -40,6 +40,7 @@
 #include <sys/wait.h>
 #include <libnet.h>
 #include <pcap.h>
+#include <libconfig.h>
 
 
 //! String with IPwatchD version information
@@ -96,7 +97,8 @@ typedef struct
 	char device[10];	/**< Device name */
 	char ip[20];		/**< IP address of device */
 	char mac[20];		/**< MAC address of device */
-	int mode;			/**< IPwatch mode on interface: IPWATCHD_DEVICE_MODE_ACTIVE or IPWATCHD_DEVICE_MODE_PASSIVE */
+	char * script;		/**< Path to user-defined script */
+	int mode;		/**< IPwatch mode on interface: IPWATCHD_DEVICE_MODE_ACTIVE or IPWATCHD_DEVICE_MODE_PASSIVE */
 }
 IPWD_S_DEV;
 
@@ -104,7 +106,7 @@ IPWD_S_DEV;
 typedef struct
 {
 	IPWD_S_DEV *dev;	/**< Dynamicaly allocated array of IPWD_S_DEV structures */
-	int devnum;			/**< Number of watched interfaces */
+	int devnum;		/**< Number of watched interfaces */
 }
 IPWD_S_DEVS;
 

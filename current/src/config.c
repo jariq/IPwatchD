@@ -61,109 +61,162 @@ int ipwd_file_exists (char *filename)
  */
 int ipwd_read_config (char *filename)
 {
-
-	FILE *fr = NULL;
-
-	char line[255];
-	int linenum = 0;
-
-	char device[10];
-	char mode[10];
-
+	IPWD_S_DEV temp_device;
+	config_t conf;
+	config_setting_t * devs = NULL;
+	config_setting_t * dev = NULL;
+	config_setting_t * param = NULL;
+	int devnum = 0;
+	int i = 0;
 	pcap_t *h_pcap = NULL;
 	char errbuf[PCAP_ERRBUF_SIZE];
+
 
 	/* Starting with empty devices structure */
 	devices.dev = NULL;
 	devices.devnum = 0;
 
-	if ((fr = fopen (filename, "r")) == NULL)
+	config_init (&conf);
+
+	if (config_read_file (&conf, filename) != CONFIG_TRUE)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s", filename);
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error at line %d - %s", config_error_line (&conf), config_error_text (&conf));
 		ipwd_message (msgbuf, IPWD_MSG_ERROR);
 		return (IPWD_RV_ERROR);
 	}
 
-	/* Parse config file */
-	while (fgets (line, 254, fr) != NULL)
+	if ((devs = config_lookup (&conf, "ipwatchd.devices")) == NULL)
 	{
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : list ipwatchd.devices not found");
+		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		return (IPWD_RV_ERROR);
+	}
 
-		linenum = linenum + 1;
+	if (config_setting_type (devs) != CONFIG_TYPE_LIST)
+	{
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices must be list");
+		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		return (IPWD_RV_ERROR);
+	}
 
-		device[0] = '\0';
-		mode[0] = '\0';
+	devnum = config_setting_length (devs);
+	
+	if (devnum <= 0)
+	{
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : no devices specified");
+		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		return (IPWD_RV_ERROR);
+	}
 
-		if ((line[0] == '#') || (line[0] == '\n'))
+	for (i = 0; i < devnum; i++)
+	{
+		temp_device.script = NULL;
+
+		dev = config_setting_get_elem (devs, i);
+
+		if (config_setting_type (dev) != CONFIG_TYPE_GROUP)
 		{
-			continue;
-		}
-
-		if (sscanf (line, "%9s %9s", device, mode) != 2)
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Not enough parameters in configuration file on line %d", linenum);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d] must be group", i);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
 
-		/* Check if device is valid ethernet device */
-		h_pcap = pcap_open_live (device, BUFSIZ, 0, 0, errbuf);
+		/* Get ipwatchd.devices.[i].device */
+		if ((param = config_setting_get_member (dev, "device")) == NULL)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].device not found", i);
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			return (IPWD_RV_ERROR);
+		}
+
+		if (config_setting_type (param) != CONFIG_TYPE_STRING)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].device must be string", i);
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			return (IPWD_RV_ERROR);
+		}
+
+		snprintf (temp_device.device, sizeof (temp_device.device), "%s", config_setting_get_string (param));
+
+		h_pcap = pcap_open_live (temp_device.device, BUFSIZ, 0, 0, errbuf);
 		if (h_pcap == NULL)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD is unable to work with device \"%s\"", device);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD is unable to work with device \"%s\"", temp_device.device);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
 
 		if (pcap_datalink (h_pcap) != DLT_EN10MB)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Device \"%s\" is not valid ethernet device", device);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Device \"%s\" is not valid ethernet device", temp_device.device);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
 
 		pcap_close (h_pcap);
 
-		/* Check mode value */
-		if ((strcmp (mode, "active") != 0) && (strcmp (mode, "passive") != 0))
+		/* Get ipwatchd.devices.[i].mode */
+		if ((param = config_setting_get_member (dev, "mode")) == NULL)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Mode \"%s\" on line %d in configuration file not supported", mode, linenum);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].mode not found", i);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
+		}
+
+		if (config_setting_type (param) != CONFIG_TYPE_STRING)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].param must be string", i);
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			return (IPWD_RV_ERROR);
+		}
+
+		if (strcmp (config_setting_get_string (param), "active") == 0)
+		{
+			temp_device.mode = IPWD_MODE_ACTIVE;
+		}
+		else if (strcmp (config_setting_get_string (param), "passive") == 0)
+		{
+			temp_device.mode = IPWD_MODE_PASSIVE;
+		}
+		else
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].mode is not supported", i);
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			return (IPWD_RV_ERROR);
+		}
+
+		/* Get ipwatchd.devices.[i].script */
+		if ((param = config_setting_get_member (dev, "mode")) != NULL)
+		{
+			if (config_setting_type (param) != CONFIG_TYPE_STRING)
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].script must be string", i);
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				return (IPWD_RV_ERROR);
+			}
+
+			/* Check if script exists and can be executed */
+
+			// TODO
 		}
 
 		/* Put read values into devices structure */
 		if ((devices.dev = (IPWD_S_DEV *) realloc (devices.dev, (devices.devnum + 1) * sizeof (IPWD_S_DEV))) == NULL)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to initialize devices structure");
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to resize devices structure");
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
 
-		strcpy (devices.dev[devices.devnum].device, device);
-
-		if (strcmp (mode, "active") == 0)
-		{
-			devices.dev[devices.devnum].mode = IPWD_MODE_ACTIVE;
-		}
-		else
-		{
-			devices.dev[devices.devnum].mode = IPWD_MODE_PASSIVE;
-		}
-
+		strcpy (devices.dev[devices.devnum].device, temp_device.device);
+		devices.dev[devices.devnum].mode = temp_device.mode;
+		devices.dev[devices.devnum].script = temp_device.script;
+		
 		devices.devnum = devices.devnum + 1;
-
-		line[0] = '\0';
-
 	}
 
-	if (fclose (fr) == EOF)
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to close configuration file %s", filename);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
+	config_destroy (&conf);
 
 	return (IPWD_RV_SUCCESS);
-
 }
 
