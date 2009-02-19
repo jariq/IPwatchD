@@ -37,7 +37,7 @@ extern char msgbuf[IPWD_MSG_BUFSIZ];
  * \param opcode ARPOP_REQUEST or ARPOP_REPLY
  * \return IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise 
  */
-int ipwd_genarp (char *dev, char *p_sip, char *p_smac, char *p_dip, char *p_dmac, int opcode)
+int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const char *p_dip, const char *p_dmac, int opcode)
 {
 
 	struct in_addr sip, dip;
@@ -85,7 +85,7 @@ int ipwd_genarp (char *dev, char *p_sip, char *p_smac, char *p_dip, char *p_dmac
 	char errbuf[LIBNET_ERRBUF_SIZE];
 
 	/* Initialize libnet */
-	h_net = libnet_init (LIBNET_LINK_ADV, dev, errbuf);
+	h_net = libnet_init (LIBNET_LINK_ADV, (char *) dev, errbuf);
 	if (h_net == NULL)
 	{
 		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to initialize libnet1 - %s", errbuf);

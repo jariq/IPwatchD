@@ -35,6 +35,12 @@ IPWD_S_DEVS devices;
 //! Structure that holds information about available D-BUS buses
 IPWD_S_BUSES buses;
 
+//! Path to user-defined script
+char *script = NULL;
+
+//! Syslog facility
+int facility = 0;
+
 //! Buffer for output messages
 char msgbuf[IPWD_MSG_BUFSIZ];
 
@@ -50,7 +56,6 @@ pcap_t *h_pcap = NULL;
  */
 int main (int argc, char *argv[])
 {
-	
 	/* Name of configuration file  */
 	char *config_file = NULL;
 
@@ -59,8 +64,7 @@ int main (int argc, char *argv[])
 
 	/* Parse command line arguments */
 	while (1)
-    {
-
+	{
 		static struct option long_options[] = {
 			{ "config", required_argument, 0, 'c' },
 			{ "debug", no_argument, &debug_flag, 1 },
@@ -78,7 +82,6 @@ int main (int argc, char *argv[])
 
 		switch (c)
 		{
-
 			case 0:
 				/* If debug_flag is set do nothing */
 				if (long_options[option_index].flag != 0)
@@ -96,7 +99,7 @@ int main (int argc, char *argv[])
 
 				if ((config_file = (char *) malloc ((strlen (optarg) + 1) * sizeof (char))) == NULL)
 				{
-					snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s", optarg);
+					snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s - malloc failed", optarg);
 					ipwd_message (msgbuf, IPWD_MSG_ERROR);
 					return (IPWD_RV_ERROR);
 				}
@@ -174,7 +177,7 @@ int main (int argc, char *argv[])
 	}
 
 	/* All messages must be sysloged since now */
-	openlog ("IPwatchD", LOG_PID, LOG_DAEMON);
+	openlog ("IPwatchD", LOG_PID, facility);
 	syslog_flag = 1;
 
 	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD started");
@@ -258,10 +261,13 @@ int main (int argc, char *argv[])
 
 	closelog ();
 
+	free (script);
+	script = NULL;
+
 	free (devices.dev);
+	devices.dev = NULL;
 
 	return (IPWD_RV_SUCCESS);
-
 }
 
 

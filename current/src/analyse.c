@@ -26,7 +26,7 @@
 
 extern IPWD_S_DEVS devices;
 extern char msgbuf[IPWD_MSG_BUFSIZ];
-
+extern char *script;
 
 //! Callback for "pcap_loop" with standard parameters. Called when ARP packet is received (detection of conflict is done here).
 /*! 
@@ -129,6 +129,9 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent",	rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 				ipwd_message (msgbuf, IPWD_MSG_ALERT);
 			}
+
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "FEATURE NOT IMPLEMENTED YET: Run user-defined script %s", script);
+			ipwd_message (msgbuf, IPWD_MSG_INFO);
 		}
 		else
 		{

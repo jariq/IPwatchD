@@ -44,7 +44,7 @@
 
 
 //! String with IPwatchD version information
-#define IPWATCHD_VERSION "IPwatchD 1.1.1"
+#define IPWATCHD_VERSION "IPwatchD 1.2"
 
 
 /* Return values */
@@ -97,7 +97,6 @@ typedef struct
 	char device[10];	/**< Device name */
 	char ip[20];		/**< IP address of device */
 	char mac[20];		/**< MAC address of device */
-	char * script;		/**< Path to user-defined script */
 	int mode;		/**< IPwatch mode on interface: IPWATCHD_DEVICE_MODE_ACTIVE or IPWATCHD_DEVICE_MODE_PASSIVE */
 }
 IPWD_S_DEV;
@@ -159,31 +158,23 @@ IPWD_S_ARP_HEADER;
 void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char * packet);
 
 /* config.c */
-int ipwd_file_exists (char *filename);
-int ipwd_read_config (char *filename);
+int ipwd_file_exists (const char *filename);
+int ipwd_read_config (const char *filename);
 
 /* daemonize.c */
 int ipwd_daemonize (void);
 
-/* desktop.c */
-void ipwd_send_desktop_notification (char *message);
-int ipwd_read_file (const char *filename, char **content);
-int ipwd_bus_entry_exists (const char *username, const char *dbus_address);
-int ipwd_create_bus_entry (const char *username, const char *dbus_address);
-int ipwd_find_buses (void);
-void ipwd_free_buses (void);
-
 /* devinfo.c */
-int ipwd_devinfo (char *p_dev, char *p_ip, char *p_mac);
+int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac);
 
 /* genarp.c */
-int ipwd_genarp (char *dev, char *p_sip, char *p_smac, char *p_dip, char *p_dmac, int opcode);
+int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const char *p_dip, const char *p_dmac, int opcode);
 
 /* ipwatchd.c */
 void ipwd_print_help (void);
 
 /* message.c */
-void ipwd_message (char *msg, int type);
+void ipwd_message (const char *msg, int type);
 
 /* signal.c */
 int ipwd_set_signal_handler (void);
