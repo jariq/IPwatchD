@@ -33,7 +33,7 @@ extern int syslog_flag;
  * \param msg Message to output
  * \param type Type of message. Possible values are IPWD_MSG_INFO, IPWD_MSG_ERROR and IPWD_MSG_ALERT.
  */
-void ipwd_message (char *msg, int type)
+void ipwd_message (const char *msg, int type)
 {
 
 	/* In daemon mode - must record messages by syslog */

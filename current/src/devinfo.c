@@ -35,7 +35,7 @@ extern char msgbuf[IPWD_MSG_BUFSIZ];
  * \param p_mac Pointer to string where the MAC address should be stored
  * \return IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise
  */
-int ipwd_devinfo (char *p_dev, char *p_ip, char *p_mac)
+int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 {
 
 	/* Create UDP socket */
