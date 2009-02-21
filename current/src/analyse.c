@@ -26,7 +26,8 @@
 
 extern IPWD_S_DEVS devices;
 extern char msgbuf[IPWD_MSG_BUFSIZ];
-extern char *script;
+extern IPWD_S_CONFIG config;
+
 
 //! Callback for "pcap_loop" with standard parameters. Called when ARP packet is received (detection of conflict is done here).
 /*! 
@@ -36,6 +37,11 @@ extern char *script;
  */
 void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char * packet)
 {
+	struct timeval current_time;
+	double difference = 0.0;
+	char * command = NULL;
+	int command_len = 0;
+	int rv = 0;
 
 	/* Get addresses from packet */
 	IPWD_S_ARP_HEADER *arpaddr;
@@ -101,7 +107,6 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 	for (i = 0; i < devices.devnum; i++)
 	{
-
 		/* Get actual IP and MAC address of interface */
 		if (ipwd_devinfo (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac) == IPWD_RV_ERROR)
 		{
@@ -111,35 +116,72 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		}
 
 		/* Check if received packet causes conflict with IP address of this interface */
-		if ((strcmp (rcv_sip, devices.dev[i].ip) == 0) && (strcmp (rcv_smac, devices.dev[i].mac) != 0))
-		{
-			if (devices.dev[i].mode == IPWD_MODE_ACTIVE)
-			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - active mode - reply sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-				ipwd_message (msgbuf, IPWD_MSG_ALERT);
-
-				/* Send reply to conflicting system */
-				ipwd_genarp (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac, rcv_sip, rcv_smac, ARPOP_REPLY);
-
-				/* Send GARP request to update cache of our neighbours */
-				ipwd_genarp (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac, devices.dev[i].ip, "ff:ff:ff:ff:ff:ff", ARPOP_REQUEST);
-			}
-			else
-			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent",	rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-				ipwd_message (msgbuf, IPWD_MSG_ALERT);
-			}
-
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "FEATURE NOT IMPLEMENTED YET: Run user-defined script %s", script);
-			ipwd_message (msgbuf, IPWD_MSG_INFO);
-		}
-		else
+		if (!((strcmp (rcv_sip, devices.dev[i].ip) == 0) && (strcmp (rcv_smac, devices.dev[i].mac) != 0)))
 		{
 			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Packet does not conflict with: %s %s-%s", devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac);
 			ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+			continue;
+		}
+	
+		/* Get current system time */
+		if (gettimeofday (&current_time, NULL) != 0)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to get current time");
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			continue;
 		}
 
-	}
+		difference = ((current_time.tv_sec + (current_time.tv_usec / 1000000.0)) - (devices.dev[i].time.tv_sec + (devices.dev[i].time.tv_usec / 1000000.0)));
 
+		/* Check if current time is within the defend interval */
+		if (difference < config.defend_interval)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - no action taken because this happened within the defend interval", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
+			ipwd_message (msgbuf, IPWD_MSG_ALERT);
+		}	
+
+		/* Handle IP conflict */
+		if (devices.dev[i].mode == IPWD_MODE_ACTIVE)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - active mode - reply sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
+			ipwd_message (msgbuf, IPWD_MSG_ALERT);
+
+			/* Send reply to conflicting system */
+			ipwd_genarp (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac, rcv_sip, rcv_smac, ARPOP_REPLY);
+
+			/* Send GARP request to update cache of our neighbours */
+			ipwd_genarp (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac, devices.dev[i].ip, "ff:ff:ff:ff:ff:ff", ARPOP_REQUEST);
+		}
+		else
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
+			ipwd_message (msgbuf, IPWD_MSG_ALERT);
+		}
+
+		if (config.script != NULL)
+		{
+			/* Run user-defined script in form: script "dev" "ip" "mac" */
+			command_len = strlen (config.script) + 2 + strlen (devices.dev[i].device) + 3 + strlen (devices.dev[i].ip) + 3 + strlen (rcv_smac) + 2;
+
+			if ((command = (char *) malloc (command_len * sizeof (char))) == NULL)
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to execute user-defined script - malloc failed");
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				continue;
+ 			}
+
+			snprintf (command, command_len, "%s \"%s\" \"%s\" \"%s\"", config.script, devices.dev[i].device, devices.dev[i].ip, rcv_smac);
+
+			rv = system (command);
+			if (rv == -1)
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to execute user-defined script: %s", command);
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			}
+
+			free (command);
+			command = NULL;
+		}
+	}
 }
 

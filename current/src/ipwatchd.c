@@ -32,14 +32,8 @@ int syslog_flag = 0;
 //! Structure that holds information about network interfaces
 IPWD_S_DEVS devices;
 
-//! Structure that holds information about available D-BUS buses
-IPWD_S_BUSES buses;
-
-//! Path to user-defined script
-char *script = NULL;
-
-//! Syslog facility
-int facility = 0;
+//! Structure that holds values of particular configuration variables
+IPWD_S_CONFIG config;
 
 //! Buffer for output messages
 char msgbuf[IPWD_MSG_BUFSIZ];
@@ -177,7 +171,7 @@ int main (int argc, char *argv[])
 	}
 
 	/* All messages must be sysloged since now */
-	openlog ("IPwatchD", LOG_PID, facility);
+	openlog ("IPwatchD", LOG_PID, config.facility);
 	syslog_flag = 1;
 
 	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD started");
@@ -261,8 +255,8 @@ int main (int argc, char *argv[])
 
 	closelog ();
 
-	free (script);
-	script = NULL;
+	free (config.script);
+	config.script = NULL;
 
 	free (devices.dev);
 	devices.dev = NULL;

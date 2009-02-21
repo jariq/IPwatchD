@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# rc.ipwatchd   Start/stop IPwatchD
+#
+# Description:  IPwatchD is simple daemon that uses libpcap to detect
+#               IP conflict on Linux.
+
+case "$1" in
+
+	start)
+		echo "Starting IP conflict detection daemon IPwatchD.."
+		/usr/local/sbin/ipwatchd -c /usr/local/etc/ipwatchd.conf
+		;;
+
+	stop)
+		echo "Stopping IP conflict detection daemon IPwatchD.."
+		killall ipwatchd
+		;;
+
+	restart)
+		stop
+		start
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 2
+		;;
+
+esac
+
+exit 0
+
