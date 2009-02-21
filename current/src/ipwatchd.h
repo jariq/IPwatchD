@@ -41,6 +41,7 @@
 #include <libnet.h>
 #include <pcap.h>
 #include <libconfig.h>
+#include <time.h>
 
 
 //! String with IPwatchD version information
@@ -89,6 +90,18 @@
 #define IPWD_MODE_PASSIVE 2
 
 
+/* Configuration */
+
+//! Structure that holds values of particular configuration variables
+typedef struct
+{
+	int facility;		/**< Syslog facility */
+	char * script;		/**< Absolute path to user-defined script */
+	int defend_interval;	/**< Minimum interval between defensive ARPs */
+}
+IPWD_S_CONFIG;
+
+
 /* Structures for network device information */
 
 //! Structure that holds information about ONE network interface
@@ -98,6 +111,7 @@ typedef struct
 	char ip[20];		/**< IP address of device */
 	char mac[20];		/**< MAC address of device */
 	int mode;		/**< IPwatch mode on interface: IPWATCHD_DEVICE_MODE_ACTIVE or IPWATCHD_DEVICE_MODE_PASSIVE */
+	struct timeval time;	/**< Time information indicating when the last conflict was detected */
 }
 IPWD_S_DEV;
 
@@ -108,26 +122,6 @@ typedef struct
 	int devnum;		/**< Number of watched interfaces */
 }
 IPWD_S_DEVS;
-
-
-/* Structures for D-BUS information  */
-
-//! Structure that holds information about ONE D-BUS bus
-typedef struct
-{
-	char * username;		/**< Username of bus owner */
-	uid_t uid;				/**< UID of bus owner */
-	char * dbus_address;	/**< Bus address */
-}
-IPWD_S_BUS;
-
-//! Structure that holds information about ALL found D-BUS buses
-typedef struct
-{
-	IPWD_S_BUS * bus;	/**< Dynamicaly allocated array of IPWD_S_BUS structures */
-	int bus_count;		/**< Number of found buses */
-}
-IPWD_S_BUSES;
 
 
 /* ARP packet information */

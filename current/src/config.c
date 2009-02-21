@@ -27,8 +27,7 @@
 extern int debug_flag;
 extern IPWD_S_DEVS devices;
 extern char msgbuf[IPWD_MSG_BUFSIZ];
-extern char *script;
-extern int facility;
+extern IPWD_S_CONFIG config;
 
 
 //! Checks existence of the file
@@ -75,7 +74,10 @@ int ipwd_read_config (const char *filename)
 	char errbuf[PCAP_ERRBUF_SIZE];
 
 
-	/* Starting with empty devices structure */
+	/* Initialize structures with default values */
+	config.facility = LOG_DAEMON;
+	config.script = NULL;
+	config.defend_interval = 0;
 	devices.dev = NULL;
 	devices.devnum = 0;
 
@@ -88,7 +90,7 @@ int ipwd_read_config (const char *filename)
 		return (IPWD_RV_ERROR);
 	}
 
-	/* Get and validate syslog facility */
+	/* Get and validate ipwatchd.facility - syslog facility */
 	if ((pChar = config_lookup_string (&conf, "ipwatchd.facility")) == NULL)
 	{
 		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.facility not found");
@@ -98,79 +100,79 @@ int ipwd_read_config (const char *filename)
 	
 	if (strcmp (pChar, "auth") == 0)
 	{
-		facility  = LOG_AUTH;
+		config.facility  = LOG_AUTH;
 	}
 	else if (strcmp (pChar, "authpriv") == 0)
 	{
-		facility = LOG_AUTHPRIV;
+		config.facility = LOG_AUTHPRIV;
 	}
 	else if (strcmp (pChar, "cron") == 0)
 	{
-		facility = LOG_CRON;
+		config.facility = LOG_CRON;
 	}
 	else if (strcmp (pChar, "daemon") == 0)
 	{
-		facility = LOG_DAEMON;
+		config.facility = LOG_DAEMON;
 	}
 	else if (strcmp (pChar, "kern") == 0)
 	{
-		facility = LOG_KERN;
+		config.facility = LOG_KERN;
 	}
 	else if (strcmp (pChar, "lpr") == 0)
 	{
-		facility = LOG_LPR;
+		config.facility = LOG_LPR;
 	}
 	else if (strcmp (pChar, "mail") == 0)
 	{
-		facility = LOG_MAIL;
+		config.facility = LOG_MAIL;
 	}
 	else if (strcmp (pChar, "news") == 0)
 	{
-		facility = LOG_NEWS;
+		config.facility = LOG_NEWS;
 	}
 	else if (strcmp (pChar, "syslog") == 0)
 	{
-		facility = LOG_SYSLOG;
+		config.facility = LOG_SYSLOG;
 	}
 	else if (strcmp (pChar, "user") == 0)
 	{
-		facility = LOG_USER;
+		config.facility = LOG_USER;
 	}
 	else if (strcmp (pChar, "uucp") == 0)
 	{
-		facility = LOG_UUCP;
+		config.facility = LOG_UUCP;
 	}
 	else if (strcmp (pChar, "local0") == 0)
 	{
-		facility = LOG_LOCAL0;
+		config.facility = LOG_LOCAL0;
 	}
 	else if (strcmp (pChar, "local1") == 0)
 	{
-		facility = LOG_LOCAL1;
+		config.facility = LOG_LOCAL1;
 	}
 	else if (strcmp (pChar, "local2") == 0)
 	{
-		facility = LOG_LOCAL2;
+		config.facility = LOG_LOCAL2;
 	}
 	else if (strcmp (pChar, "local3") == 0)
 	{
-		facility = LOG_LOCAL3;
+		config.facility = LOG_LOCAL3;
 	}
 	else if (strcmp (pChar, "local4") == 0)
 	{
-		facility = LOG_LOCAL4;
+		config.facility = LOG_LOCAL4;
 	}
 	else if (strcmp (pChar, "local5") == 0)
 	{
-		facility = LOG_LOCAL5;
+		config.facility = LOG_LOCAL5;
 	}
 	else if (strcmp (pChar, "local6") == 0)
 	{
-		facility = LOG_LOCAL6;
+		config.facility = LOG_LOCAL6;
 	}
 	else if (strcmp (pChar, "local7") == 0)
 	{
-		facility = LOG_LOCAL7;
+		config.facility = LOG_LOCAL7;
 	}
 	else
 	{
@@ -179,30 +181,36 @@ int ipwd_read_config (const char *filename)
 		return (IPWD_RV_ERROR);
 	}
 
-	/* Get and validate path to user-defined script */
-	if ((pChar = config_lookup_string (&conf, "ipwatchd.script")) == NULL)
+	/* Get and validate ipwatchd.script - path to user-defined script */
+	if ((pChar = config_lookup_string (&conf, "ipwatchd.script")) != NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.script not found");
+		if (ipwd_file_exists (pChar) == IPWD_RV_ERROR)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : file %s specified as ipwatchd.script does not exist", pChar);
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			return (IPWD_RV_ERROR);
+		}
+		
+		if ((config.script = (char *) malloc ((strlen (pChar) + 1) * sizeof (char))) == NULL)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : malloc for ipwatchd.script failed");
+			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			return (IPWD_RV_ERROR);
+		}
+
+		strcpy (config.script, pChar);
+	}
+	
+	/* Get and validate ipwatchd.defend_interval - minimum interval between defensive ARPs */
+	config.defend_interval = config_lookup_int (&conf, "ipwatchd.defend_interval");
+
+	if ((config.defend_interval < 0) || (config.defend_interval > 600))
+	{
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.defend_interval value must be between 0 and 600");
 		ipwd_message (msgbuf, IPWD_MSG_ERROR);
 		return (IPWD_RV_ERROR);
 	}
 
-	if (ipwd_file_exists (pChar) == IPWD_RV_ERROR)
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : file %s specified as ipwatchd.script does not exist", pChar);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-	
-	if ((script = (char *) malloc ((strlen (pChar) + 1) * sizeof (char))) == NULL)
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : malloc for ipwatchd.script failed");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-
-	strcpy (script, pChar);
-	
 	/* Get configuration parameters for ipwatchd.devices */
 	if ((devs = config_lookup (&conf, "ipwatchd.devices")) == NULL)
 	{
@@ -312,6 +320,8 @@ int ipwd_read_config (const char *filename)
 
 		strcpy (devices.dev[devices.devnum].device, temp_device.device);
 		devices.dev[devices.devnum].mode = temp_device.mode;
+		devices.dev[devices.devnum].time.tv_sec = 0;
+		devices.dev[devices.devnum].time.tv_usec = 0;
 		
 		devices.devnum = devices.devnum + 1;
 	}
