@@ -15,7 +15,7 @@ MAC=$3
 case "$DEVICE" in
 
 	eth0)
-		# Send sms
+		# Just beep :)
 		echo -e "\a"
 		;;
 
