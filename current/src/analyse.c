@@ -140,6 +140,10 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 			ipwd_message (msgbuf, IPWD_MSG_ALERT);
 		}	
 
+		/* Store conflict time */
+		devices.dev[i].time.tv_sec = current_time.tv_sec;
+		devices.dev[i].time.tv_usec = current_time.tv_usec;
+
 		/* Handle IP conflict */
 		if (devices.dev[i].mode == IPWD_MODE_ACTIVE)
 		{
