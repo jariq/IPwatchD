@@ -138,7 +138,8 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		{
 			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - no action taken because this happened within the defend interval", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 			ipwd_message (msgbuf, IPWD_MSG_ALERT);
-		}	
+			continue;
+		}
 
 		/* Store conflict time */
 		devices.dev[i].time.tv_sec = current_time.tv_sec;

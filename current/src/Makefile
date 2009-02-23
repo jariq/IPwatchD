@@ -48,11 +48,13 @@ install:
 	mkdir -p /usr/local/sbin
 	mkdir -p /usr/local/share/man/man8
 	cp ipwatchd /usr/local/sbin
+	cp scripts/conflict.sh /usr/local/sbin
 	cp ipwatchd.conf /usr/local/etc
 	cp ../doc/ipwatchd.8.gz /usr/local/share/man/man8
 
 uninstall:
 	rm -f /usr/local/sbin/ipwatchd
+	rm -f /usr/local/sbin/conflict.sh
 	rm -f /usr/local/etc/ipwatchd.conf
 	rm -f /usr/local/share/man/man8/ipwatchd.8.gz
 
