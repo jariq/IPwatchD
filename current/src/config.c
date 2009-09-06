@@ -62,250 +62,219 @@ int ipwd_file_exists (const char *filename)
  */
 int ipwd_read_config (const char *filename)
 {
-	IPWD_S_DEV temp_device;
-	config_t conf;
-	const char * pChar = NULL;
-	config_setting_t * devs = NULL;
-	config_setting_t * dev = NULL;
-	config_setting_t * param = NULL;
-	int devnum = 0;
-	int i = 0;
+
+	FILE *fr = NULL;
+
+	char line[500];
+	int linenum = 0;
+
+	char variable[100];
+	char value[400];
+
 	pcap_t *h_pcap = NULL;
 	char errbuf[PCAP_ERRBUF_SIZE];
 
-
-	/* Initialize structures with default values */
+	// Initialize structures with default values
 	config.facility = LOG_DAEMON;
 	config.script = NULL;
 	config.defend_interval = 0;
 	devices.dev = NULL;
 	devices.devnum = 0;
 
-	config_init (&conf);
-
-	if (config_read_file (&conf, filename) != CONFIG_TRUE)
+	if ((fr = fopen (filename, "r")) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error at line %d - %s", config_error_line (&conf), config_error_text (&conf));
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s", filename);
 		ipwd_message (msgbuf, IPWD_MSG_ERROR);
 		return (IPWD_RV_ERROR);
 	}
 
-	/* Get and validate ipwatchd.facility - syslog facility */
-	if ((pChar = config_lookup_string (&conf, "ipwatchd.facility")) == NULL)
+	/* Parse config file */
+	while (fgets (line, 499, fr) != NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.facility not found");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-	
-	if (strcmp (pChar, "auth") == 0)
-	{
-		config.facility  = LOG_AUTH;
-	}
-	else if (strcmp (pChar, "authpriv") == 0)
-	{
-		config.facility = LOG_AUTHPRIV;
-	}
-	else if (strcmp (pChar, "cron") == 0)
-	{
-		config.facility = LOG_CRON;
-	}
-	else if (strcmp (pChar, "daemon") == 0)
-	{
-		config.facility = LOG_DAEMON;
-	}
-	else if (strcmp (pChar, "kern") == 0)
-	{
-		config.facility = LOG_KERN;
-	}
-	else if (strcmp (pChar, "lpr") == 0)
-	{
-		config.facility = LOG_LPR;
-	}
-	else if (strcmp (pChar, "mail") == 0)
-	{
-		config.facility = LOG_MAIL;
-	}
-	else if (strcmp (pChar, "news") == 0)
-	{
-		config.facility = LOG_NEWS;
-	}
-	else if (strcmp (pChar, "syslog") == 0)
-	{
-		config.facility = LOG_SYSLOG;
-	}
-	else if (strcmp (pChar, "user") == 0)
-	{
-		config.facility = LOG_USER;
-	}
-	else if (strcmp (pChar, "uucp") == 0)
-	{
-		config.facility = LOG_UUCP;
-	}
-	else if (strcmp (pChar, "local0") == 0)
-	{
-		config.facility = LOG_LOCAL0;
-	}
-	else if (strcmp (pChar, "local1") == 0)
-	{
-		config.facility = LOG_LOCAL1;
-	}
-	else if (strcmp (pChar, "local2") == 0)
-	{
-		config.facility = LOG_LOCAL2;
-	}
-	else if (strcmp (pChar, "local3") == 0)
-	{
-		config.facility = LOG_LOCAL3;
-	}
-	else if (strcmp (pChar, "local4") == 0)
-	{
-		config.facility = LOG_LOCAL4;
-	}
-	else if (strcmp (pChar, "local5") == 0)
-	{
-		config.facility = LOG_LOCAL5;
-	}
-	else if (strcmp (pChar, "local6") == 0)
-	{
-		config.facility = LOG_LOCAL6;
-	}
-	else if (strcmp (pChar, "local7") == 0)
-	{
-		config.facility = LOG_LOCAL7;
-	}
-	else
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : %s as a value of ipwatchd.facility is not supported", pChar);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
 
-	/* Get and validate ipwatchd.script - path to user-defined script */
-	if ((pChar = config_lookup_string (&conf, "ipwatchd.script")) != NULL)
-	{
-		if (ipwd_file_exists (pChar) == IPWD_RV_ERROR)
+		linenum = linenum + 1;
+
+		variable[0] = '\0';
+		value[0] = '\0';
+
+		if ((line[0] == '#') || (line[0] == '\n'))
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : file %s specified as ipwatchd.script does not exist", pChar);
+			continue;
+		}
+
+		if (sscanf (line, "%99s %399s", variable, value) != 2)
+		{
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Not enough parameters in configuration file on line %d", linenum);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
+
+		/* Syslog Facility */
+		if (strcmp (variable, "syslog_facility") == 0)
+		{
+			if (strcmp (value, "auth") == 0)
+			{
+				config.facility  = LOG_AUTH;
+				continue;
+			}
+			else if (strcmp (value, "authpriv") == 0)
+			{
+				config.facility = LOG_AUTHPRIV;
+				continue;
+			}
+			else if (strcmp (value, "cron") == 0)
+			{
+				config.facility = LOG_CRON;
+				continue;
+			}
+			else if (strcmp (value, "daemon") == 0)
+			{
+				config.facility = LOG_DAEMON;
+				continue;
+			}
+			else if (strcmp (value, "kern") == 0)
+			{
+				config.facility = LOG_KERN;
+				continue;
+			}
+			else if (strcmp (value, "lpr") == 0)
+			{
+				config.facility = LOG_LPR;
+				continue;
+			}
+			else if (strcmp (value, "mail") == 0)
+			{
+				config.facility = LOG_MAIL;
+				continue;
+			}
+			else if (strcmp (value, "news") == 0)
+			{
+				config.facility = LOG_NEWS;
+				continue;
+			}
+			else if (strcmp (value, "syslog") == 0)
+			{
+				config.facility = LOG_SYSLOG;
+				continue;
+			}
+			else if (strcmp (value, "user") == 0)
+			{
+				config.facility = LOG_USER;
+				continue;
+			}
+			else if (strcmp (value, "uucp") == 0)
+			{
+				config.facility = LOG_UUCP;
+				continue;
+			}
+			else if (strcmp (value, "local0") == 0)
+			{
+				config.facility = LOG_LOCAL0;
+				continue;
+			}
+			else if (strcmp (value, "local1") == 0)
+			{
+				config.facility = LOG_LOCAL1;
+				continue;
+			}
+			else if (strcmp (value, "local2") == 0)
+			{
+				config.facility = LOG_LOCAL2;
+				continue;
+			}
+			else if (strcmp (value, "local3") == 0)
+			{
+				config.facility = LOG_LOCAL3;
+				continue;
+			}
+			else if (strcmp (value, "local4") == 0)
+			{
+				config.facility = LOG_LOCAL4;
+				continue;
+			}
+			else if (strcmp (value, "local5") == 0)
+			{
+				config.facility = LOG_LOCAL5;
+				continue;
+			}
+			else if (strcmp (value, "local6") == 0)
+			{
+				config.facility = LOG_LOCAL6;
+				continue;
+			}
+			else if (strcmp (value, "local7") == 0)
+			{
+				config.facility = LOG_LOCAL7;
+				continue;
+			}
+			else
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : %s as a value of syslog_facility is not supported", value);
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				return (IPWD_RV_ERROR);
+			}
+		}
+
+		/* Path to user-defined script */
+		if (strcmp (variable, "user_script") == 0)
+		{
+			if (ipwd_file_exists (value) == IPWD_RV_ERROR)
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : file %s specified as user_script does not exist", value);
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				return (IPWD_RV_ERROR);
+			}
+	
+			if ((config.script = (char *) malloc ((strlen (value) + 1) * sizeof (char))) == NULL)
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : malloc for user_script failed");
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				return (IPWD_RV_ERROR);
+			}
+
+			strcpy (config.script, value);
+			continue;
+		}
+
+		/* Minimum interval between defensive ARPs */
+		if (strcmp (variable, "defend_interval") == 0)
+		{
+			config.defend_interval = strtol (value, NULL, 10);
+
+			if ((config.defend_interval < 0) || (config.defend_interval > 600))
+			{
+				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : defend_interval value must be between 0 and 600");
+				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				return (IPWD_RV_ERROR);
+			}
+
+			continue;
+		}
+	
+		/* ALL OTHER UNCOMMENTED LINES MUST SPECIFY INTERFACES */
 		
-		if ((config.script = (char *) malloc ((strlen (pChar) + 1) * sizeof (char))) == NULL)
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : malloc for ipwatchd.script failed");
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
-			return (IPWD_RV_ERROR);
-		}
-
-		strcpy (config.script, pChar);
-	}
-	
-	/* Get and validate ipwatchd.defend_interval - minimum interval between defensive ARPs */
-	config.defend_interval = config_lookup_int (&conf, "ipwatchd.defend_interval");
-
-	if ((config.defend_interval < 0) || (config.defend_interval > 600))
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.defend_interval value must be between 0 and 600");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-
-	/* Get configuration parameters for ipwatchd.devices */
-	if ((devs = config_lookup (&conf, "ipwatchd.devices")) == NULL)
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : list ipwatchd.devices not found");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-
-	if (config_setting_type (devs) != CONFIG_TYPE_LIST)
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices must be list");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-
-	devnum = config_setting_length (devs);
-	
-	if (devnum <= 0)
-	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : no devices specified");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		return (IPWD_RV_ERROR);
-	}
-
-	for (i = 0; i < devnum; i++)
-	{
-		dev = config_setting_get_elem (devs, i);
-
-		if (config_setting_type (dev) != CONFIG_TYPE_GROUP)
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d] must be group", i);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
-			return (IPWD_RV_ERROR);
-		}
-
-		/* Get and validate ipwatchd.devices.[i].device */
-		if ((param = config_setting_get_member (dev, "device")) == NULL)
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].device not found", i);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
-			return (IPWD_RV_ERROR);
-		}
-
-		if (config_setting_type (param) != CONFIG_TYPE_STRING)
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].device must be string", i);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
-			return (IPWD_RV_ERROR);
-		}
-
-		snprintf (temp_device.device, sizeof (temp_device.device), "%s", config_setting_get_string (param));
-
-		h_pcap = pcap_open_live (temp_device.device, BUFSIZ, 0, 0, errbuf);
+		/* Check if device is valid ethernet device */
+		h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
 		if (h_pcap == NULL)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD is unable to work with device \"%s\"", temp_device.device);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD is unable to work with device \"%s\"", variable);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
 
 		if (pcap_datalink (h_pcap) != DLT_EN10MB)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Device \"%s\" is not valid ethernet device", temp_device.device);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Device \"%s\" is not valid ethernet device", variable);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
 
 		pcap_close (h_pcap);
 
-		/* Get and validate ipwatchd.devices.[i].mode */
-		if ((param = config_setting_get_member (dev, "mode")) == NULL)
+		/* Check mode value */
+		if ((strcmp (value, "active") != 0) && (strcmp (value, "passive") != 0))
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].mode not found", i);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
-			return (IPWD_RV_ERROR);
-		}
-
-		if (config_setting_type (param) != CONFIG_TYPE_STRING)
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].param must be string", i);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
-			return (IPWD_RV_ERROR);
-		}
-
-		if (strcmp (config_setting_get_string (param), "active") == 0)
-		{
-			temp_device.mode = IPWD_MODE_ACTIVE;
-		}
-		else if (strcmp (config_setting_get_string (param), "passive") == 0)
-		{
-			temp_device.mode = IPWD_MODE_PASSIVE;
-		}
-		else
-		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : ipwatchd.devices.[%d].mode is not supported", i);
+			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Mode \"%s\" on line %d in configuration file not supported", value, linenum);
 			ipwd_message (msgbuf, IPWD_MSG_ERROR);
 			return (IPWD_RV_ERROR);
 		}
@@ -318,16 +287,35 @@ int ipwd_read_config (const char *filename)
 			return (IPWD_RV_ERROR);
 		}
 
-		strcpy (devices.dev[devices.devnum].device, temp_device.device);
-		devices.dev[devices.devnum].mode = temp_device.mode;
+		strncpy (devices.dev[devices.devnum].device, variable, 9);
+		*(devices.dev[devices.devnum].device + 9) = '\0';
+
+		if (strcmp (value, "active") == 0)
+		{
+			devices.dev[devices.devnum].mode = IPWD_MODE_ACTIVE;
+		}
+		else
+		{
+			devices.dev[devices.devnum].mode = IPWD_MODE_PASSIVE;
+		}
+
+		/* Set time of last conflict */
 		devices.dev[devices.devnum].time.tv_sec = 0;
 		devices.dev[devices.devnum].time.tv_usec = 0;
-		
+
 		devices.devnum = devices.devnum + 1;
+	
+		line[0] = '\0';
 	}
 
-	config_destroy (&conf);
+	if (fclose (fr) == EOF)
+	{
+		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to close configuration file %s", filename);
+		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		return (IPWD_RV_ERROR);
+	}
 
 	return (IPWD_RV_SUCCESS);
+
 }
 
