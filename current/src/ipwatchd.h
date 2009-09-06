@@ -40,7 +40,6 @@
 #include <sys/wait.h>
 #include <libnet.h>
 #include <pcap.h>
-#include <libconfig.h>
 #include <time.h>
 
 

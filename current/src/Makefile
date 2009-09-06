@@ -3,7 +3,7 @@
 
 CC= gcc
 CFLAGS= -Wall -O2
-LIBS= -lpcap -lnet -lconfig
+LIBS= -lpcap -lnet
 
 
 all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
