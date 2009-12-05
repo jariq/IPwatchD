@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,7 +25,6 @@
 
 
 extern IPWD_S_DEVS devices;
-extern char msgbuf[IPWD_MSG_BUFSIZ];
 extern IPWD_S_CONFIG config;
 
 
@@ -53,8 +52,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 	if ((p_rcv_sip = inet_ntoa (*((struct in_addr *) &arpaddr->arp_spa))) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not get source IP address from packet");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not get source IP address from packet");
 		return;
 	}
 
@@ -66,8 +64,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 	if ((p_rcv_smac = ether_ntoa ((const struct ether_addr *) &arpaddr->arp_sha)) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not get source MAC address from packet");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not get source MAC address from packet");
 		return;
 	}
 
@@ -79,8 +76,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 	if ((p_rcv_dip = inet_ntoa (*((struct in_addr *) &arpaddr->arp_tpa))) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not get destination IP address from packet");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not get destination IP address from packet");
 		return;
 	}
 
@@ -92,15 +88,13 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 	if ((p_rcv_dmac = ether_ntoa ((const struct ether_addr *) &arpaddr->arp_tha)) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not get destination MAC address from packet");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not get destination MAC address from packet");
 		return;
 	}
 
 	strcpy (rcv_dmac, p_rcv_dmac);
 
-	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Received ARP packet: S:%s-%s D:%s-%s", rcv_sip, rcv_smac, rcv_dip, rcv_dmac);
-	ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+	ipwd_message (IPWD_MSG_DEBUG, "Received ARP packet: S:%s-%s D:%s-%s", rcv_sip, rcv_smac, rcv_dip, rcv_dmac);
 
 	/* Search through devices structure */
 	int i = 0;
@@ -110,24 +104,21 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		/* Get actual IP and MAC address of interface */
 		if (ipwd_devinfo (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac) == IPWD_RV_ERROR)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to get IP and MAC address of %s", devices.dev[i].device);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "Unable to get IP and MAC address of %s", devices.dev[i].device);
 			return;
 		}
 
 		/* Check if received packet causes conflict with IP address of this interface */
 		if (!((strcmp (rcv_sip, devices.dev[i].ip) == 0) && (strcmp (rcv_smac, devices.dev[i].mac) != 0)))
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Packet does not conflict with: %s %s-%s", devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac);
-			ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+			ipwd_message (IPWD_MSG_DEBUG, "Packet does not conflict with: %s %s-%s", devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac);
 			continue;
 		}
 	
 		/* Get current system time */
 		if (gettimeofday (&current_time, NULL) != 0)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to get current time");
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "Unable to get current time");
 			continue;
 		}
 
@@ -136,8 +127,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		/* Check if current time is within the defend interval */
 		if (difference < config.defend_interval)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - no action taken because this happened within the defend interval", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-			ipwd_message (msgbuf, IPWD_MSG_ALERT);
+			ipwd_message (IPWD_MSG_ALERT, "MAC address %s causes IP conflict with address %s set on interface %s - no action taken because this happened within the defend interval", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 			continue;
 		}
 
@@ -148,8 +138,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		/* Handle IP conflict */
 		if (devices.dev[i].mode == IPWD_MODE_ACTIVE)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - active mode - reply sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-			ipwd_message (msgbuf, IPWD_MSG_ALERT);
+			ipwd_message (IPWD_MSG_ALERT, "MAC address %s causes IP conflict with address %s set on interface %s - active mode - reply sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 
 			/* Send reply to conflicting system */
 			ipwd_genarp (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac, rcv_sip, rcv_smac, ARPOP_REPLY);
@@ -159,8 +148,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		}
 		else
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-			ipwd_message (msgbuf, IPWD_MSG_ALERT);
+			ipwd_message (IPWD_MSG_ALERT, "MAC address %s causes IP conflict with address %s set on interface %s - passive mode - reply not sent", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
 		}
 
 		if (config.script != NULL)
@@ -170,8 +158,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 			if ((command = (char *) malloc (command_len * sizeof (char))) == NULL)
 			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to execute user-defined script - malloc failed");
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Unable to execute user-defined script - malloc failed");
 				continue;
  			}
 
@@ -180,8 +167,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 			rv = system (command);
 			if (rv == -1)
 			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to execute user-defined script: %s", command);
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Unable to execute user-defined script: %s", command);
 			}
 
 			free (command);

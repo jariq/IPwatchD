@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,9 +34,6 @@ IPWD_S_DEVS devices;
 
 //! Structure that holds values of particular configuration variables
 IPWD_S_CONFIG config;
-
-//! Buffer for output messages
-char msgbuf[IPWD_MSG_BUFSIZ];
 
 //! Handle for libpcap
 pcap_t *h_pcap = NULL;
@@ -86,15 +83,13 @@ int main (int argc, char *argv[])
 			case 'c':
 				if (ipwd_file_exists (optarg) == IPWD_RV_ERROR)
 				{
-					snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s", optarg);
-					ipwd_message (msgbuf, IPWD_MSG_ERROR);
+					ipwd_message (IPWD_MSG_ERROR, "Unable to open configuration file %s", optarg);
 					return (IPWD_RV_ERROR);
 				}
 
 				if ((config_file = (char *) malloc ((strlen (optarg) + 1) * sizeof (char))) == NULL)
 				{
-					snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s - malloc failed", optarg);
-					ipwd_message (msgbuf, IPWD_MSG_ERROR);
+					ipwd_message (IPWD_MSG_ERROR, "Unable to open configuration file %s - malloc failed", optarg);
 					return (IPWD_RV_ERROR);
 				}
 
@@ -110,13 +105,11 @@ int main (int argc, char *argv[])
 				return (IPWD_RV_SUCCESS);
 
 			case 'v':
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "%s", IPWATCHD_VERSION);
-				ipwd_message (msgbuf, IPWD_MSG_INFO);
+				ipwd_message (IPWD_MSG_INFO, IPWATCHD_VERSION);
 				return (IPWD_RV_SUCCESS);
 
 			case '?':
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Try %s --help", argv[0]);
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Try %s --help", argv[0]);
 				return (IPWD_RV_ERROR);
 
 			default:
@@ -136,26 +129,22 @@ int main (int argc, char *argv[])
 	/* Path to configuration file must be specified */
 	if (config_file == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "You must specify path to configuration file.");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Try %s --help", argv[0]);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "You must specify path to configuration file.");
+		ipwd_message (IPWD_MSG_ERROR, "Try %s --help", argv[0]);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Only root can run IPwatchD */
 	if (getuid () != 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "You must be root to run IPwatchD");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "You must be root to run IPwatchD");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Read config file */
 	if (ipwd_read_config (config_file) == IPWD_RV_ERROR)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to read configuration file");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to read configuration file");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -165,8 +154,7 @@ int main (int argc, char *argv[])
 	/* Daemonize */
 	if (ipwd_daemonize () != IPWD_RV_SUCCESS)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to daemonize");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to daemonize");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -174,8 +162,7 @@ int main (int argc, char *argv[])
 	openlog ("IPwatchD", LOG_PID, config.facility);
 	syslog_flag = 1;
 
-	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD started");
-	ipwd_message (msgbuf, IPWD_MSG_INFO);
+	ipwd_message (IPWD_MSG_INFO, "IPwatchD started");
 
 	char errbuf[PCAP_ERRBUF_SIZE];
 	struct bpf_program fp;
@@ -187,8 +174,7 @@ int main (int argc, char *argv[])
 
         if (pcap_findalldevs(&pcap_alldevs, errbuf))
         {
-                snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to get network device list - %s", errbuf);
-                ipwd_message (msgbuf, IPWD_MSG_ERROR);
+                ipwd_message (IPWD_MSG_ERROR, "Unable to get network device list - %s", errbuf);
                 return (IPWD_RV_ERROR);
         }
 
@@ -203,8 +189,7 @@ int main (int argc, char *argv[])
 
         if (!any_exists)
         {
-                snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Pseudodevice \"any\" used by libpcap is not available");
-                ipwd_message (msgbuf, IPWD_MSG_ERROR);
+                ipwd_message (IPWD_MSG_ERROR, "Pseudodevice \"any\" used by libpcap is not available");
                 return (IPWD_RV_ERROR);
         }
 
@@ -212,46 +197,40 @@ int main (int argc, char *argv[])
 	h_pcap = pcap_open_live ("any", BUFSIZ, 0, 0, errbuf);
 	if (h_pcap == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to create packet capture object - %s", errbuf);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to create packet capture object - %s", errbuf);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Set SIGTERM handler */
 	if (ipwd_set_signal_handler () != IPWD_RV_SUCCESS)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to set signal handlers");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to set signal handlers");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Compile packet capture filter - only ARP packets will be captured */
 	if (pcap_compile (h_pcap, &fp, "arp", 0, 0) == -1)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to compile packet capture filter - %s", pcap_geterr (h_pcap));
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to compile packet capture filter - %s", pcap_geterr (h_pcap));
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Set packet capture filter */
 	if (pcap_setfilter (h_pcap, &fp) == -1)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to set packet capture filter - %s", pcap_geterr (h_pcap));
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to set packet capture filter - %s", pcap_geterr (h_pcap));
 		return (IPWD_RV_ERROR);
 	}
 
 	pcap_freecode (&fp);
 
-	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Entering pcap loop");
-	ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+	ipwd_message (IPWD_MSG_DEBUG, "Entering pcap loop");
 
 	/* Loop until SIGTERM or any error destroys pcap object */
 	pcap_loop (h_pcap, -1, ipwd_analyse, NULL);
 
 	/* Stop IPwatchD */
-	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD stopped");
-	ipwd_message (msgbuf, IPWD_MSG_INFO);
+	ipwd_message (IPWD_MSG_INFO, "IPwatchD stopped");
 
 	closelog ();
 

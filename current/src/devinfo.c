@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,9 +24,6 @@
 #include "ipwatchd.h"
 
 
-extern char msgbuf[IPWD_MSG_BUFSIZ];
-
-
 //! Gets the IP and MAC addresses of specified device in human readable form
 /*!
  * Based on examples from: http://english.geekpage.jp/programming/linux-network/
@@ -43,8 +40,7 @@ int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 	sock = socket (AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not open socket");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not open socket");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -55,8 +51,7 @@ int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 	/* Get IP address of interface */
 	if (ioctl (sock, SIOCGIFADDR, &ifr) < 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not retrieve IP address of the device \"%s\"", p_dev);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not retrieve IP address of the device \"%s\"", p_dev);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -64,8 +59,7 @@ int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 
 	if ((p_dev_ip = inet_ntoa (((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr)) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not convert IP address of the device \"%s\"", p_dev);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not convert IP address of the device \"%s\"", p_dev);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -74,8 +68,7 @@ int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 	/* Get MAC address of interface */
 	if (ioctl (sock, SIOCGIFHWADDR, &ifr) < 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not retrieve IP address of the device \"%s\"", p_dev);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not retrieve IP address of the device \"%s\"", p_dev);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -83,8 +76,7 @@ int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 
 	if ((p_dev_mac = ether_ntoa ((const struct ether_addr *) &ifr.ifr_hwaddr.sa_data[0])) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Could not convert IP address of the device \"%s\"", p_dev);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Could not convert IP address of the device \"%s\"", p_dev);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -93,8 +85,7 @@ int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac)
 	/* Close socket */
 	close (sock);
 
-	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Device info: %s %s-%s", p_dev, p_ip, p_mac);
-	ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+	ipwd_message (IPWD_MSG_DEBUG, "Device info: %s %s-%s", p_dev, p_ip, p_mac);
 
 	return (IPWD_RV_SUCCESS);
 

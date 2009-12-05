@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@
 #include "ipwatchd.h"
 
 
-extern char msgbuf[IPWD_MSG_BUFSIZ];
 extern pcap_t *h_pcap;
 
 
@@ -43,8 +42,7 @@ int ipwd_set_signal_handler (void)
 
 	if (sigaction (SIGTERM, &sigact, 0) != 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to set SIGTERM handler");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to set SIGTERM handler");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -60,8 +58,7 @@ int ipwd_set_signal_handler (void)
 void ipwd_signal_handler (int signal)
 {
 
-	snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Received signal %d", signal);
-	ipwd_message (msgbuf, IPWD_MSG_DEBUG);
+	ipwd_message (IPWD_MSG_DEBUG, "Received signal %d", signal);
 
 	if (signal == SIGTERM)
 	{

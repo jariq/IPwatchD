@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,7 +26,6 @@
 
 extern int debug_flag;
 extern IPWD_S_DEVS devices;
-extern char msgbuf[IPWD_MSG_BUFSIZ];
 extern IPWD_S_CONFIG config;
 
 
@@ -83,8 +82,7 @@ int ipwd_read_config (const char *filename)
 
 	if ((fr = fopen (filename, "r")) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to open configuration file %s", filename);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to open configuration file %s", filename);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -104,8 +102,7 @@ int ipwd_read_config (const char *filename)
 
 		if (sscanf (line, "%99s %399s", variable, value) != 2)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Not enough parameters in configuration file on line %d", linenum);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "Not enough parameters in configuration file on line %d", linenum);
 			return (IPWD_RV_ERROR);
 		}
 
@@ -209,8 +206,7 @@ int ipwd_read_config (const char *filename)
 			}
 			else
 			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : %s as a value of syslog_facility is not supported", value);
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : %s as a value of syslog_facility is not supported", value);
 				return (IPWD_RV_ERROR);
 			}
 		}
@@ -220,15 +216,13 @@ int ipwd_read_config (const char *filename)
 		{
 			if (ipwd_file_exists (value) == IPWD_RV_ERROR)
 			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : file %s specified as user_script does not exist", value);
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : file %s specified as user_script does not exist", value);
 				return (IPWD_RV_ERROR);
 			}
 	
 			if ((config.script = (char *) malloc ((strlen (value) + 1) * sizeof (char))) == NULL)
 			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : malloc for user_script failed");
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : malloc for user_script failed");
 				return (IPWD_RV_ERROR);
 			}
 
@@ -243,8 +237,7 @@ int ipwd_read_config (const char *filename)
 
 			if ((config.defend_interval < 0) || (config.defend_interval > 600))
 			{
-				snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Configuration parse error : defend_interval value must be between 0 and 600");
-				ipwd_message (msgbuf, IPWD_MSG_ERROR);
+				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : defend_interval value must be between 0 and 600");
 				return (IPWD_RV_ERROR);
 			}
 
@@ -257,15 +250,13 @@ int ipwd_read_config (const char *filename)
 		h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
 		if (h_pcap == NULL)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "IPwatchD is unable to work with device \"%s\"", variable);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "IPwatchD is unable to work with device \"%s\"", variable);
 			return (IPWD_RV_ERROR);
 		}
 
 		if (pcap_datalink (h_pcap) != DLT_EN10MB)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Device \"%s\" is not valid ethernet device", variable);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "Device \"%s\" is not valid ethernet device", variable);
 			return (IPWD_RV_ERROR);
 		}
 
@@ -274,16 +265,14 @@ int ipwd_read_config (const char *filename)
 		/* Check mode value */
 		if ((strcmp (value, "active") != 0) && (strcmp (value, "passive") != 0))
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Mode \"%s\" on line %d in configuration file not supported", value, linenum);
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "Mode \"%s\" on line %d in configuration file not supported", value, linenum);
 			return (IPWD_RV_ERROR);
 		}
 
 		/* Put read values into devices structure */
 		if ((devices.dev = (IPWD_S_DEV *) realloc (devices.dev, (devices.devnum + 1) * sizeof (IPWD_S_DEV))) == NULL)
 		{
-			snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to resize devices structure");
-			ipwd_message (msgbuf, IPWD_MSG_ERROR);
+			ipwd_message (IPWD_MSG_ERROR, "Unable to resize devices structure");
 			return (IPWD_RV_ERROR);
 		}
 
@@ -310,8 +299,7 @@ int ipwd_read_config (const char *filename)
 
 	if (fclose (fr) == EOF)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to close configuration file %s", filename);
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to close configuration file %s", filename);
 		return (IPWD_RV_ERROR);
 	}
 

@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,9 +24,6 @@
 #include "ipwatchd.h"
 
 
-extern char msgbuf[IPWD_MSG_BUFSIZ];
-
-
 //! Daemonizes the proccess
 /*!
  * \return IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise
@@ -37,8 +34,7 @@ int ipwd_daemonize (void)
 	/* If parent of this process is init we are already in daemon mode */
 	if (getppid () == 1)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Already running as daemon");
-		ipwd_message (msgbuf, IPWD_MSG_INFO);
+		ipwd_message (IPWD_MSG_INFO, "Already running as daemon");
 		return (IPWD_RV_SUCCESS);
 	}
 
@@ -46,8 +42,7 @@ int ipwd_daemonize (void)
 	pid_t pid = fork ();
 	if (pid < 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to fork a child process");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to fork a child process");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -64,40 +59,35 @@ int ipwd_daemonize (void)
 	pid_t sid = setsid ();
 	if (sid < 0)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to create a new session");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to create a new session");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Change current directory to root */
 	if ((chdir ("/")) == -1)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to change current directory to /");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to change current directory to /");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Redirect standard input */
 	if ((freopen ("/dev/null", "r", stdin)) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to redirect STDIN");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to redirect STDIN");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Redirect standard output */
 	if ((freopen ("/dev/null", "w", stdout)) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to redirect STDOUT");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to redirect STDOUT");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Redirect standard error output */
 	if ((freopen ("/dev/null", "w", stderr)) == NULL)
 	{
-		snprintf (msgbuf, IPWD_MSG_BUFSIZ, "Unable to redirect STDERR");
-		ipwd_message (msgbuf, IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_ERROR, "Unable to redirect STDERR");
 		return (IPWD_RV_ERROR);
 	}
 
