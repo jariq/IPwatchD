@@ -153,7 +153,7 @@ int main (int argc, char * argv[])
 		// Show GTK dialog with warning icon on active X display
 		GtkWidget *dialog = NULL;
 		gtk_init (&argc, &argv);
-		dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, message);
+		dialog = gtk_message_dialog_new (NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s", message);
 		gtk_window_set_title (GTK_WINDOW (dialog), title);
 		gtk_window_set_keep_above (GTK_WINDOW (dialog), TRUE);
 		gtk_dialog_run (GTK_DIALOG (dialog));

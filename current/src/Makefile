@@ -1,5 +1,5 @@
 # IPwatchD - IP conflict detection tool for Linux
-# Copyright (C) 2007-2008 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+# Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
 
 CC= gcc
 CFLAGS= -Wall -O2
