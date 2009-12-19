@@ -24,9 +24,6 @@
 #include "ipwatchd.h"
 
 
-extern char msgbuf[IPWD_MSG_BUFSIZ];
-
-
 //! Generates ARP packet with libnet1
 /*!
  * \param dev Name of the device

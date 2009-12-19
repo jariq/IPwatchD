@@ -5,7 +5,6 @@ CC= gcc
 CFLAGS= -Wall -O2
 LIBS= -lpcap -lnet
 
-
 all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
 	$(CC) $(CFLAGS) analyse.o config.o daemonize.o devinfo.o genarp.o \
 	ipwatchd.o message.o signal.o -o ipwatchd $(LIBS)
@@ -39,22 +38,24 @@ signal.o: signal.c ipwatchd.h
 clean:
 	-rm -f *.o
 
-distclean:
-	-rm -f *.o ipwatchd
+distclean: clean
+	-rm -f ipwatchd
 
 
 install:
-	mkdir -p /usr/local/etc
-	mkdir -p /usr/local/sbin
-	mkdir -p /usr/local/share/man/man8
-	cp ipwatchd /usr/local/sbin
-	cp scripts/conflict.sh /usr/local/sbin
-	cp ipwatchd.conf /usr/local/etc
-	cp ../doc/ipwatchd.8.gz /usr/local/share/man/man8
+	mkdir -p $(DESTDIR)/etc
+	mkdir -p $(DESTDIR)/usr/sbin
+	mkdir -p $(DESTDIR)/usr/share/man/man8
+	cp ipwatchd $(DESTDIR)/usr/sbin
+	cp scripts/ipwatchd-script $(DESTDIR)/usr/sbin
+	cp scripts/ipwatchd $(DESTDIR)/etc/init.d
+	cp ipwatchd.conf $(DESTDIR)/etc
+	cp ../doc/ipwatchd.8.gz $(DESTDIR)/usr/share/man/man8
 
 uninstall:
-	rm -f /usr/local/sbin/ipwatchd
-	rm -f /usr/local/sbin/conflict.sh
-	rm -f /usr/local/etc/ipwatchd.conf
-	rm -f /usr/local/share/man/man8/ipwatchd.8.gz
+	rm -f $(DESTDIR)/usr/sbin/ipwatchd
+	rm -f $(DESTDIR)/usr/sbin/ipwatchd-script
+	rm -f $(DESTDIR)/etc/init.d/ipwatchd
+	rm -f $(DESTDIR)/etc/ipwatchd.conf
+	rm -f $(DESTDIR)/usr/share/man/man8/ipwatchd.8.gz
 

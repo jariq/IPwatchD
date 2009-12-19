@@ -16,8 +16,9 @@ distclean:
 	-rm -f ipwatchd-gnotify
 
 install:
-	mkdir -p /usr/local/bin
-	cp ipwatchd-gnotify /usr/local/bin
+	mkdir -p $(DESTDIR)/usr/sbin
+	cp ipwatchd-gnotify $(DESTDIR)/usr/sbin
 
 uninstall:
-	rm -f /usr/local/bin/ipwatchd-gnotify
+	rm -f $(DESTDIR)/usr/sbin/ipwatchd-gnotify
+

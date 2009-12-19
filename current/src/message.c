@@ -36,51 +36,49 @@ extern int syslog_flag;
 void ipwd_message (int type, const char *format, ...)
 {
 
+	/* Handle debug mode first for efficiency */
+	if ((type == IPWD_MSG_DEBUG) && (!debug_flag))
+	{
+		return;
+	}
+
 	va_list arguments;
-	char msg[IPWD_MSG_BUFSIZ];	
+	char msg[IPWD_MSG_BUFSIZ];
 
 	/* Put formatted message to msg buffer */
 	va_start(arguments, format);
 	vsnprintf(msg, IPWD_MSG_BUFSIZ, format, arguments);
 	va_end(arguments);
 
-	/* In daemon mode - must record messages by syslog */
-	if (syslog_flag)
+	/* Every message is recorded by syslog no matter if process is daemonized or not */
+	switch (type)
 	{
 
-		switch (type)
-		{
+		case IPWD_MSG_INFO:
+			syslog (LOG_INFO, "%s", msg);
+			break;
 
-			case IPWD_MSG_INFO:
-				syslog (LOG_INFO, "%s", msg);
-				break;
+		case IPWD_MSG_ERROR:
+			syslog (LOG_ERR, "%s", msg);
+			break;
 
-			case IPWD_MSG_ERROR:
-				syslog (LOG_ERR, "%s", msg);
-				break;
+		case IPWD_MSG_ALERT:
+			syslog (LOG_ALERT, "%s", msg);
+			break;
 
-			case IPWD_MSG_ALERT:
-				syslog (LOG_ALERT, "%s", msg);
-				break;
+		case IPWD_MSG_DEBUG:
+			syslog (LOG_DEBUG, "%s", msg);
+			break;
 
-			case IPWD_MSG_DEBUG:
-				if (debug_flag)
-				{
-					syslog (LOG_DEBUG, "%s", msg);
-				}
-				break;
-
-			default:
-				syslog (LOG_ERR, "%s", msg);
-				break;
-
-		}
+		default:
+			syslog (LOG_ERR, "%s", msg);
+			break;
 
 	}
-	else
-	/* Not daemon yet - messages can be printed to terminal */
-	{
 
+	/* Output message also to terminal if process is not daemonized */
+	if (!syslog_flag)
+	{
 		switch (type)
 		{
 
@@ -97,10 +95,7 @@ void ipwd_message (int type, const char *format, ...)
 				break;
 
 			case IPWD_MSG_DEBUG:
-				if (debug_flag)
-				{
-					fprintf (stdout, "%s\n", msg);
-				}
+				fprintf (stdout, "%s\n", msg);
 				break;
 
 			default:
@@ -108,7 +103,6 @@ void ipwd_message (int type, const char *format, ...)
 				break;
 
 		}
-
 	}
 
 }
