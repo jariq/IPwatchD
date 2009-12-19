@@ -1,15 +1,15 @@
 /* IPwatchD - IP conflict detection tool for Linux
  * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
- *  
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * version 2 as published by the Free Software Foundation.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *  
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -28,6 +28,9 @@ int debug_flag = 0;
 
 //! Flag indicating that output of program must be recorded by syslog
 int syslog_flag = 0;
+
+//! Flag indicating testing mode when every ARP packet is considered to be conflicting
+int testing_flag = 0;
 
 //! Structure that holds information about network interfaces
 IPWD_S_DEVS devices;
@@ -58,13 +61,14 @@ int main (int argc, char *argv[])
 	{
 		static struct option long_options[] = {
 			{ "config", required_argument, 0, 'c' },
-			{ "debug", no_argument, &debug_flag, 1 },
+			{ "debug", no_argument, 0, 'd' },
+			{ "test", no_argument, 0, 't' },
 			{ "help", no_argument, 0, 'h' },
 			{ "version", no_argument, 0, 'v' },
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long (argc, argv, "c:dhv", long_options, &option_index);
+		c = getopt_long (argc, argv, "c:dthv", long_options, &option_index);
 
 		if (c == -1)
 		{
@@ -73,13 +77,6 @@ int main (int argc, char *argv[])
 
 		switch (c)
 		{
-			case 0:
-				/* If debug_flag is set do nothing */
-				if (long_options[option_index].flag != 0)
-				{
-					break;
-				}
-
 			case 'c':
 				if (ipwd_file_exists (optarg) == IPWD_RV_ERROR)
 				{
@@ -99,6 +96,10 @@ int main (int argc, char *argv[])
 			case 'd':
 				debug_flag = 1;
 				break;
+
+            case 't':
+                testing_flag = 1;
+                break;
 
 			case 'h':
 				ipwd_print_help ();
@@ -226,8 +227,10 @@ int main (int argc, char *argv[])
 
 	ipwd_message (IPWD_MSG_DEBUG, "Entering pcap loop");
 
-	/* Loop until SIGTERM or any error destroys pcap object */
+	/* Loop until SIGTERM calls pcap_breakloop */
 	pcap_loop (h_pcap, -1, ipwd_analyse, NULL);
+
+	pcap_close (h_pcap);
 
 	/* Stop IPwatchD */
 	ipwd_message (IPWD_MSG_INFO, "IPwatchD stopped");
@@ -249,25 +252,19 @@ void ipwd_print_help (void)
 {
 	fprintf (stdout, "IPwatchD - IP conflict detection tool for Linux\n");
 	fprintf (stdout, "\n");
-	fprintf (stdout, "Usage: ipwatchd --config config_file [--debug]\n");
+	fprintf (stdout, "IPwatchD is simple daemon that analyses all incoming ARP\n");
+	fprintf (stdout, "packets in order to detect IP conflicts.\n");
 	fprintf (stdout, "\n");
-	fprintf (stdout, "  --config config_file    - Path to configuration file\n");
-	fprintf (stdout, "  --debug                 - Run in debug mode\n");
+	fprintf (stdout, "Usage: ipwatchd --config config_file [--debug] [--test]\n");
+	fprintf (stdout, "\n");
+	fprintf (stdout, "  -c | --config config_file    - Path to configuration file\n");
+	fprintf (stdout, "  -d | --debug                 - Run in debug mode\n");
+	fprintf (stdout, "  -t | --test                  - Run in testing mode\n");
 	fprintf (stdout, "\n");
 	fprintf (stdout, "or     ipwatchd --version|--help\n");
 	fprintf (stdout, "\n");
-	fprintf (stdout, "  --version               - Prints program version\n");
-	fprintf (stdout, "  --help                  - Displays this help message\n");
-	fprintf (stdout, "\n");
-	fprintf (stdout, "IPwatchD is simple daemon that uses pcap library to capture\n");
-	fprintf (stdout, "all  incoming  ARP  packets. It  then  compares  IP and MAC\n");
-	fprintf (stdout, "addresses from  packets with addresses of local  interfaces\n");
-	fprintf (stdout, "trying to detect IP conflict.  IPwatchD can operate on each\n");
-	fprintf (stdout, "network interface in two modes – passive and active.\n");
-	fprintf (stdout, "In passive mode it just generates syslog events.  In active\n");
-	fprintf (stdout, "mode  it  also  answers  Gratuitous  ARP  request and sends\n");
-	fprintf (stdout, "following  Gratuitous  ARP  requests to update ARP cache of\n");
-	fprintf (stdout, "neighboring hosts with correct data.\n");
+	fprintf (stdout, "  -v | --version               - Prints program version\n");
+	fprintf (stdout, "  -v | --help                  - Displays this help message\n");
 	fprintf (stdout, "\n");
 	fprintf (stdout, "Please send any bug reports to jariq@jariq.sk\n");
 }

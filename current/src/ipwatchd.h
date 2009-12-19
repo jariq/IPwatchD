@@ -1,15 +1,15 @@
 /* IPwatchD - IP conflict detection tool for Linux
  * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * version 2 as published by the Free Software Foundation.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *  
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -47,6 +47,9 @@
 //! String with IPwatchD version information
 #define IPWATCHD_VERSION "IPwatchD 1.2"
 
+//! Absolute path to pid file
+#define IPWD_PIDFILE "/var/run/ipwatchd.pid"
+
 
 /* Return values */
 
@@ -54,25 +57,25 @@
 #define IPWD_RV_SUCCESS 0
 
 //! "Error" return value of IPwatchD internal functions
-#define IPWD_RV_ERROR   2
+#define IPWD_RV_ERROR 2
 
 
 /* Message options */
 
 //! Size of buffer for output messages
-#define IPWD_MSG_BUFSIZ  1000
+#define IPWD_MSG_BUFSIZ 1024
 
 //! Message type: information
-#define IPWD_MSG_INFO    1
+#define IPWD_MSG_INFO 1
 
 //! Message type: error
-#define IPWD_MSG_ERROR   2
+#define IPWD_MSG_ERROR 2
 
 //! Message type: alert
-#define IPWD_MSG_ALERT   3
+#define IPWD_MSG_ALERT 3
 
 //! Message type: debug
-#define IPWD_MSG_DEBUG   4
+#define IPWD_MSG_DEBUG 4
 
 
 /* File operation options */
@@ -83,11 +86,17 @@
 
 /* Operation modes */
 
-//! Indicates that IPwatchD should operate in active mode on selected device
-#define IPWD_MODE_ACTIVE  1
+//! Indicates active protection mode
+#define IPWD_MODE_ACTIVE 1
 
-//! Indicates that  IPwatchD should operate in passive mode on selected device
+//! Indicates passive protection mode
 #define IPWD_MODE_PASSIVE 2
+
+//! Indicates automatic configuration mode
+#define IPWD_MODE_AUTOMATIC 3
+
+//! Indicates manual configuration mode
+#define IPWD_MODE_MANUAL 4
 
 
 /* Configuration */
@@ -98,6 +107,7 @@ typedef struct
 	int facility;		/**< Syslog facility */
 	char * script;		/**< Absolute path to user-defined script */
 	int defend_interval;	/**< Minimum interval between defensive ARPs */
+	int mode;		/**< Configuration mode for network devices */
 }
 IPWD_S_CONFIG;
 
@@ -157,9 +167,12 @@ int ipwd_read_config (const char *filename);
 
 /* daemonize.c */
 int ipwd_daemonize (void);
+int ipwd_create_pidfile (void);
+int ipwd_check_pidfile (void);
 
 /* devinfo.c */
 int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac);
+int ipwd_fill_devices (void);
 
 /* genarp.c */
 int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const char *p_dip, const char *p_dmac, int opcode);

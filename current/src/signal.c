@@ -62,7 +62,7 @@ void ipwd_signal_handler (int signal)
 
 	if (signal == SIGTERM)
 	{
-		pcap_close (h_pcap);
+		pcap_breakloop (h_pcap);
 	}
 
 }

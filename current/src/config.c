@@ -56,7 +56,7 @@ int ipwd_file_exists (const char *filename)
 
 //! Reads configuration file and stores names of interfaces into the "devices" structure
 /*!
- * \param filename Path to the configurationfile
+ * \param filename Path to the configuration file
  * \return IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise
  */
 int ipwd_read_config (const char *filename)
@@ -77,6 +77,7 @@ int ipwd_read_config (const char *filename)
 	config.facility = LOG_DAEMON;
 	config.script = NULL;
 	config.defend_interval = 0;
+	config.mode = IPWD_MODE_AUTOMATIC;
 	devices.dev = NULL;
 	devices.devnum = 0;
 
@@ -86,14 +87,16 @@ int ipwd_read_config (const char *filename)
 		return (IPWD_RV_ERROR);
 	}
 
+	memset (line, 0, sizeof (line));
+
 	/* Parse config file */
 	while (fgets (line, 499, fr) != NULL)
 	{
 
 		linenum = linenum + 1;
 
-		variable[0] = '\0';
-		value[0] = '\0';
+		memset (variable, 0, sizeof (variable));
+		memset (value, 0, sizeof (value));
 
 		if ((line[0] == '#') || (line[0] == '\n'))
 		{
@@ -243,58 +246,104 @@ int ipwd_read_config (const char *filename)
 
 			continue;
 		}
+
+		/* Configuration mode for network devices */
+		if (strcmp (variable, "device_configuration") == 0)
+		{
+			/* Check mode value */
+			if ((strcmp (value, "automatic") != 0) && (strcmp (value, "manual") != 0))
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Configuration mode \"%s\" on line %d in configuration file not supported", value, linenum);
+				return (IPWD_RV_ERROR);
+			}
+
+			/* Switch to manual mode if requested */
+			if (strcmp (value, "manual") == 0)
+			{
+				config.mode = IPWD_MODE_MANUAL;
+				continue;
+			}
+
+			/* Automatic mode is default */
+			if (ipwd_fill_devices () != IPWD_RV_SUCCESS)
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Automatic configuration mode failed. Please switch to manual configuration mode.");
+				return (IPWD_RV_ERROR);
+			}
+
+			continue;
+		}
+
+		/* Monitored interfaces */
+		if (strcmp (variable, "iface") == 0)
+		{
+
+			/* Check if configuration mode is manual */
+			if (config.mode != IPWD_MODE_MANUAL)
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Found iface variable in automatic configuration mode. Please check configuration file for logical errors");
+				return (IPWD_RV_ERROR);
+			}
+
+			/* Read interface name and protection mode */
+			if (sscanf (line, "%*s %93s %399s", variable, value) != 2)
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Not enough parameters in configuration file on line %d", linenum);
+				return (IPWD_RV_ERROR);
+			}
 	
-		/* ALL OTHER UNCOMMENTED LINES MUST SPECIFY INTERFACES */
-		
-		/* Check if device is valid ethernet device */
-		h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
-		if (h_pcap == NULL)
-		{
-			ipwd_message (IPWD_MSG_ERROR, "IPwatchD is unable to work with device \"%s\"", variable);
-			return (IPWD_RV_ERROR);
+			/* Check if device is valid ethernet device */
+			h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
+			if (h_pcap == NULL)
+			{
+				ipwd_message (IPWD_MSG_ERROR, "IPwatchD is unable to work with device \"%s\"", variable);
+				return (IPWD_RV_ERROR);
+			}
+
+			if (pcap_datalink (h_pcap) != DLT_EN10MB)
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Device \"%s\" is not valid ethernet device", variable);
+				return (IPWD_RV_ERROR);
+			}
+
+			pcap_close (h_pcap);
+
+			/* Check mode value */
+			if ((strcmp (value, "active") != 0) && (strcmp (value, "passive") != 0))
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Protection mode \"%s\" on line %d in configuration file not supported", value, linenum);
+				return (IPWD_RV_ERROR);
+			}
+
+			/* Put read values into devices structure */
+			if ((devices.dev = (IPWD_S_DEV *) realloc (devices.dev, (devices.devnum + 1) * sizeof (IPWD_S_DEV))) == NULL)
+			{
+				ipwd_message (IPWD_MSG_ERROR, "Unable to resize devices structure");
+				return (IPWD_RV_ERROR);
+			}
+
+			strncpy (devices.dev[devices.devnum].device, variable, 9);
+			*(devices.dev[devices.devnum].device + 9) = '\0';
+
+			if (strcmp (value, "active") == 0)
+			{
+				devices.dev[devices.devnum].mode = IPWD_MODE_ACTIVE;
+			}
+			else
+			{
+				devices.dev[devices.devnum].mode = IPWD_MODE_PASSIVE;
+			}
+
+			/* Set time of last conflict */
+			devices.dev[devices.devnum].time.tv_sec = 0;
+			devices.dev[devices.devnum].time.tv_usec = 0;
+
+			devices.devnum = devices.devnum + 1;
+
 		}
 
-		if (pcap_datalink (h_pcap) != DLT_EN10MB)
-		{
-			ipwd_message (IPWD_MSG_ERROR, "Device \"%s\" is not valid ethernet device", variable);
-			return (IPWD_RV_ERROR);
-		}
+		memset (line, 0, sizeof (line));
 
-		pcap_close (h_pcap);
-
-		/* Check mode value */
-		if ((strcmp (value, "active") != 0) && (strcmp (value, "passive") != 0))
-		{
-			ipwd_message (IPWD_MSG_ERROR, "Mode \"%s\" on line %d in configuration file not supported", value, linenum);
-			return (IPWD_RV_ERROR);
-		}
-
-		/* Put read values into devices structure */
-		if ((devices.dev = (IPWD_S_DEV *) realloc (devices.dev, (devices.devnum + 1) * sizeof (IPWD_S_DEV))) == NULL)
-		{
-			ipwd_message (IPWD_MSG_ERROR, "Unable to resize devices structure");
-			return (IPWD_RV_ERROR);
-		}
-
-		strncpy (devices.dev[devices.devnum].device, variable, 9);
-		*(devices.dev[devices.devnum].device + 9) = '\0';
-
-		if (strcmp (value, "active") == 0)
-		{
-			devices.dev[devices.devnum].mode = IPWD_MODE_ACTIVE;
-		}
-		else
-		{
-			devices.dev[devices.devnum].mode = IPWD_MODE_PASSIVE;
-		}
-
-		/* Set time of last conflict */
-		devices.dev[devices.devnum].time.tv_sec = 0;
-		devices.dev[devices.devnum].time.tv_usec = 0;
-
-		devices.devnum = devices.devnum + 1;
-	
-		line[0] = '\0';
 	}
 
 	if (fclose (fr) == EOF)
