@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,10 @@
 
 
 #include "ipwatchd.h"
+
+
+extern int syslog_flag;
+extern IPWD_S_CONFIG config;
 
 
 //! Daemonizes the proccess
@@ -58,8 +62,12 @@ int ipwd_daemonize (void)
 		exit (IPWD_RV_SUCCESS);
 	}
 
+	/* All messages must be sysloged since now */
+	openlog ("ipwatchd", LOG_PID | LOG_CONS | LOG_NDELAY, config.facility);
+	syslog_flag = 1;
+
 	/* Set default umask */
-	umask (0);
+	umask (0166);
 
 	/* Create new session */
 	pid_t sid = setsid ();

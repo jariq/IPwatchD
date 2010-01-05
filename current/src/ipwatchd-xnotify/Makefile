@@ -1,5 +1,5 @@
 # IPwatchD X Notify - Notification tool for X window environment
-# Copyright (C) 2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+# Copyright (C) 2009-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
 
 CC= gcc
 CFLAGS= -Wall -O2
@@ -16,8 +16,9 @@ distclean:
 	-rm -f ipwatchd-xnotify
 
 install:
-	mkdir -p /usr/local/bin
-	cp ipwatchd-xnotify /usr/local/bin
+	mkdir -p $(DESTDIR)/usr/bin
+	cp ipwatchd-xnotify $(DESTDIR)/usr/bin
 
 uninstall:
-	rm -f /usr/local/bin/ipwatchd-xnotify
+	rm -f $(DESTDIR)/usr/bin/ipwatchd-xnotify
+

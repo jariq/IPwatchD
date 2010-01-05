@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,6 +55,9 @@ int main (int argc, char *argv[])
 
 	int c;
 	int option_index = 0;
+
+	/* Open connection to syslog with default daemon facility */
+	openlog ("ipwatchd", LOG_PID | LOG_CONS | LOG_NDELAY, LOG_DAEMON);
 
 	/* Parse command line arguments */
 	while (1)
@@ -158,10 +161,6 @@ int main (int argc, char *argv[])
 		ipwd_message (IPWD_MSG_ERROR, "Unable to daemonize");
 		return (IPWD_RV_ERROR);
 	}
-
-	/* All messages must be sysloged since now */
-	openlog ("IPwatchD", LOG_PID, config.facility);
-	syslog_flag = 1;
 
 	ipwd_message (IPWD_MSG_INFO, "IPwatchD started");
 
