@@ -42,7 +42,7 @@ Download IPwatchD source from sourceforge project page.
 Extract code and build it:
 $ gunzip ipwatchd-gnotify-x.x.tar.gz
 $ tar -xf ipwatchd-gnotify-x.x.tar
-$ cd ipwatchd-gnotify/src
+$ cd ipwatchd-gnotify-x.x/src
 $ make
 
 You can install IPwatchD G Notify as root with command:
