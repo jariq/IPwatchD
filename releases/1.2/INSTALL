@@ -1,0 +1,80 @@
+IPwatchD requirements
+---------------------
+
+To build IPwatchD from source code you will need gcc, libpcap 
+and libnet1 installed in your system.
+
+To build IPwatchD G Notify (Notification tool for Gnome 
+environment) you will also need libnotify.
+
+On Ubuntu 8.04 it should be sufficient to install following packages:
+
+  - build-essential - C compiler and other development tools
+  - libpcap-dev     - Network packet capture library
+  - libnet1-dev     - Network packet construction library
+
+  - libnotify-dev   - Desktop notification library
+
+
+Building IPwatchD
+-----------------
+
+Download IPwatchD source from sourceforge project page.
+
+Extract code and build it:
+$ gunzip ipwatchd-x.x.tar.gz
+$ tar -xf ipwatchd-x.x.tar
+$ cd ipwatchd-x.x/src
+$ make
+
+You can install IPwatchD as root with command:
+# make install
+
+You can uninstall IPwatchD as root with command:
+# make uninstall
+
+
+Building IPwatchD G Notify
+--------------------------
+
+Download IPwatchD source from sourceforge project page.
+
+Extract code and build it:
+$ gunzip ipwatchd-gnotify-x.x.tar.gz
+$ tar -xf ipwatchd-gnotify-x.x.tar
+$ cd ipwatchd-gnotify-x.x/src
+$ make
+
+You can install IPwatchD G Notify as root with command:
+# make install
+
+You can uninstall IPwatchD G Notify as root with command:
+# make uninstall
+
+
+What gets installed
+-------------------
+
+/etc/ipwatchd.conf                 - configuration file
+/etc/init.d/ipwatchd               - init script
+/usr/sbin/ipwatchd                 - daemon executable
+/usr/sbin/ipwatchd-script          - user-defined script
+/usr/share/man/man8/ipwatchd.8.gz  - manual page
+
+/usr/sbin/ipwatchd-gnotify         - gnome notification tool
+
+
+IPwatchD configuration
+----------------------
+
+Edit configuration file /etc/ipwatchd.conf with your 
+favorite text editor to suite your needs.
+
+You can run IPwatchD as root with init script:
+# /etc/init.d/ipwatchd start
+
+Or you can run it with command:
+# /usr/sbin/ipwatchd -c /etc/ipwatchd.conf
+
+For more information please read "ipwatchd" manual page.
+
