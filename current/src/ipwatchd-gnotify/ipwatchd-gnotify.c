@@ -1,5 +1,5 @@
 /* IPwatchD G Notify - Notification tool for Gnome environment
- * Copyright (C) 2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2009-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

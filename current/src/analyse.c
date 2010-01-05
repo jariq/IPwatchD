@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -103,12 +103,6 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 	ipwd_message (IPWD_MSG_DEBUG, "Received ARP packet: S:%s-%s D:%s-%s", rcv_sip, rcv_smac, rcv_dip, rcv_dmac);
 
-	if (devices.devnum == 0)
-	{
-		ipwd_message (IPWD_MSG_INFO, "No devices are being watched");
-		return;
-	}
-
 	/* Search through devices structure */
 	int i = 0;
 
@@ -118,7 +112,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		if (ipwd_devinfo (devices.dev[i].device, devices.dev[i].ip, devices.dev[i].mac) == IPWD_RV_ERROR)
 		{
 			ipwd_message (IPWD_MSG_ERROR, "Unable to get IP and MAC address of %s", devices.dev[i].device);
-			return;
+			continue;
 		}
 
 		if (testing_flag == 0)
@@ -135,7 +129,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		if (gettimeofday (&current_time, NULL) != 0)
 		{
 			ipwd_message (IPWD_MSG_ERROR, "Unable to get current time");
-			continue;
+			break;
 		}
 
 		difference = ((current_time.tv_sec + (current_time.tv_usec / 1000000.0)) - (devices.dev[i].time.tv_sec + (devices.dev[i].time.tv_usec / 1000000.0)));
@@ -144,7 +138,7 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 		if (difference < config.defend_interval)
 		{
 			ipwd_message (IPWD_MSG_ALERT, "MAC address %s causes IP conflict with address %s set on interface %s - no action taken because this happened within the defend interval", rcv_smac, devices.dev[i].ip, devices.dev[i].device);
-			continue;
+			break;
 		}
 
 		/* Store conflict time */
@@ -175,10 +169,12 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 			if ((command = (char *) malloc (command_len * sizeof (char))) == NULL)
 			{
 				ipwd_message (IPWD_MSG_ERROR, "Unable to execute user-defined script - malloc failed");
-				continue;
+				break;
  			}
 
 			snprintf (command, command_len, "%s \"%s\" \"%s\" \"%s\"", config.script, devices.dev[i].device, devices.dev[i].ip, rcv_smac);
+
+			ipwd_message (IPWD_MSG_DEBUG, "Running user-defined script: %s", command);
 
 			rv = system (command);
 			if (rv == -1)
@@ -188,6 +184,10 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 
 			free (command);
 			command = NULL;
+		}
+		else
+		{
+			ipwd_message (IPWD_MSG_DEBUG, "No user-defined script specified");
 		}
 
 		if (testing_flag == 1)

@@ -1,5 +1,5 @@
 # IPwatchD G Notify - Notification tool for Gnome environment
-# Copyright (C) 2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+# Copyright (C) 2009-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
 
 CC= gcc
 CFLAGS= -Wall -O2

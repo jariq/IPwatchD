@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2009 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -247,8 +247,8 @@ int ipwd_read_config (const char *filename)
 			continue;
 		}
 
-		/* Configuration mode for network devices */
-		if (strcmp (variable, "device_configuration") == 0)
+		/* Configuration mode for network interfaces */
+		if (strcmp (variable, "iface_configuration") == 0)
 		{
 			/* Check mode value */
 			if ((strcmp (value, "automatic") != 0) && (strcmp (value, "manual") != 0))
@@ -296,13 +296,13 @@ int ipwd_read_config (const char *filename)
 			h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
 			if (h_pcap == NULL)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "IPwatchD is unable to work with device \"%s\"", variable);
+				ipwd_message (IPWD_MSG_ERROR, "IPwatchD is unable to work with interface \"%s\"", variable);
 				return (IPWD_RV_ERROR);
 			}
 
 			if (pcap_datalink (h_pcap) != DLT_EN10MB)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Device \"%s\" is not valid ethernet device", variable);
+				ipwd_message (IPWD_MSG_ERROR, "Device \"%s\" is not valid ethernet interface", variable);
 				return (IPWD_RV_ERROR);
 			}
 
@@ -338,6 +338,8 @@ int ipwd_read_config (const char *filename)
 			devices.dev[devices.devnum].time.tv_sec = 0;
 			devices.dev[devices.devnum].time.tv_usec = 0;
 
+			ipwd_message (IPWD_MSG_DEBUG, "Found interface %s", devices.dev[devices.devnum].device);
+
 			devices.devnum = devices.devnum + 1;
 
 		}
@@ -350,6 +352,21 @@ int ipwd_read_config (const char *filename)
 	{
 		ipwd_message (IPWD_MSG_ERROR, "Unable to close configuration file %s", filename);
 		return (IPWD_RV_ERROR);
+	}
+
+	/* Check number of discovered interfaces */
+	if (devices.devnum < 1)
+	{
+		if (config.mode == IPWD_MODE_MANUAL)
+		{
+			ipwd_message (IPWD_MSG_ERROR, "No interfaces specified in configuration file");
+			return (IPWD_RV_ERROR);
+		}
+		else
+		{
+			ipwd_message (IPWD_MSG_ERROR, "No interfaces discovered");
+			return (IPWD_RV_ERROR);
+		}
 	}
 
 	return (IPWD_RV_SUCCESS);
