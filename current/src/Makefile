@@ -36,14 +36,14 @@ signal.o: signal.c ipwatchd.h
 
 
 clean:
-	-rm -f *.o
+	-rm *.o
 
 distclean: clean
-	-rm -f ipwatchd
+	-rm ipwatchd
 
 
 install:
-	mkdir -p $(DESTDIR)/etc
+	mkdir -p $(DESTDIR)/etc/init.d
 	mkdir -p $(DESTDIR)/usr/sbin
 	mkdir -p $(DESTDIR)/usr/share/man/man8
 	cp ipwatchd $(DESTDIR)/usr/sbin
@@ -53,9 +53,9 @@ install:
 	cp ../doc/ipwatchd.8.gz $(DESTDIR)/usr/share/man/man8
 
 uninstall:
-	rm -f $(DESTDIR)/usr/sbin/ipwatchd
-	rm -f $(DESTDIR)/usr/sbin/ipwatchd-script
-	rm -f $(DESTDIR)/etc/init.d/ipwatchd
-	rm -f $(DESTDIR)/etc/ipwatchd.conf
-	rm -f $(DESTDIR)/usr/share/man/man8/ipwatchd.8.gz
+	rm $(DESTDIR)/usr/sbin/ipwatchd
+	rm $(DESTDIR)/usr/sbin/ipwatchd-script
+	rm $(DESTDIR)/etc/init.d/ipwatchd
+	rm $(DESTDIR)/etc/ipwatchd.conf
+	rm $(DESTDIR)/usr/share/man/man8/ipwatchd.8.gz
 
