@@ -1,0 +1,42 @@
+.TH IPWATCHD-GNOTIFY 1
+.SH NAME
+IPwatchD G Notify \- Notification tool for Gnome environment
+.SH SYNOPSIS
+.B ipwatchd-gnotify
+.B [\-\-debug]
+.B [\-\-broadcast]
+.B --title
+.I message_title
+.B --message
+.I message_content
+.br
+.B ipwatchd-gnotify \-\-version
+.br
+.B ipwatchd-gnotify \-\-help
+.SH DESCRIPTION
+IPwatchD-G-Notify is notification tool for Gnome environment used by IPwatchD daemon to display notification "bubble" when IP conflict occurs.
+.PP
+.SH OPTIONS
+The following options are supported:
+.TP
+.B "\-d \-\-debug"
+Prints debug information to standard output.
+.TP
+.B "\-b \-\-broadcast"
+Sends notification to all active displays. Requires root privileges.
+.TP
+.B "\-t \-\-title"
+Specifies title of the notification window.
+.TP
+.B "\-m \-\-message"
+Specifies message shown in the notification window.
+.TP
+.B "\-v \-\-version"
+Prints program version to standard output.
+.TP
+.B "\-h \-\-help"
+Prints short help information to standard output.
+.SH AUTHOR
+This manual page was written by Jaroslav Imrich <jariq@jariq.sk>
+.SH SEE ALSO
+.BR ipwatchd (8)
