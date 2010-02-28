@@ -27,7 +27,11 @@ protection mode IPwatchD protects your host before IP takeover by answering grat
 .B passive
 protection mode it just records information about IP conflict through standard syslog interface.
 .PP
-IPwatchD also supports execution of user defined scripts. More info on this topic can be found in the configuration file.
+IPwatchD also supports execution of user defined scripts. See
+.BR ipwatchd.conf (5)
+and
+.BR ipwatchd-script (1)
+for more details.
 .SH OPTIONS
 The following options are supported:
 .TP
@@ -46,11 +50,11 @@ Prints program version to standard output.
 .B "\-h \-\-help"
 Prints short help information to standard output.
 .SH CONFIGURATION
-Configuration options are described in file /etc/ipwatchd.conf
+See
+.BR ipwatchd.conf (5)
+for more details.
 .SH AUTHOR
 This manual page was written by Jaroslav Imrich <jariq@jariq.sk>
 .SH SEE ALSO
-More information about IP conflict detection can be found on
-.UR http://ipwatchd.sf.net
-http://ipwatchd.sf.net
-.UE
+.BR ipwatchd.conf (5),
+.BR ipwatchd-script (1)
