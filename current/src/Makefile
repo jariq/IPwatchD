@@ -2,7 +2,7 @@
 # Copyright (C) 2007-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
 
 CC= gcc
-CFLAGS= -Wall -O2
+CFLAGS= -g -Wall -O2
 LIBS= -lpcap -lnet
 
 all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
@@ -46,11 +46,15 @@ install:
 	mkdir -p $(DESTDIR)/etc/init.d
 	mkdir -p $(DESTDIR)/usr/sbin
 	mkdir -p $(DESTDIR)/usr/share/man/man8
+	mkdir -p $(DESTDIR)/usr/share/man/man5
+	mkdir -p $(DESTDIR)/usr/share/man/man1
 	cp ipwatchd $(DESTDIR)/usr/sbin
 	cp scripts/ipwatchd-script $(DESTDIR)/usr/sbin
 	cp scripts/ipwatchd $(DESTDIR)/etc/init.d
 	cp ipwatchd.conf $(DESTDIR)/etc
 	cp ../doc/ipwatchd.8.gz $(DESTDIR)/usr/share/man/man8
+	cp ../doc/ipwatchd.conf.5.gz $(DESTDIR)/usr/share/man/man5
+	cp ../doc/ipwatchd-script.1.gz $(DESTDIR)/usr/share/man/man1
 
 uninstall:
 	rm $(DESTDIR)/usr/sbin/ipwatchd
@@ -58,4 +62,6 @@ uninstall:
 	rm $(DESTDIR)/etc/init.d/ipwatchd
 	rm $(DESTDIR)/etc/ipwatchd.conf
 	rm $(DESTDIR)/usr/share/man/man8/ipwatchd.8.gz
+	rm $(DESTDIR)/usr/share/man/man5/ipwatchd.conf.5.gz
+	rm $(DESTDIR)/usr/share/man/man1/ipwatchd-script.1.gz
 
