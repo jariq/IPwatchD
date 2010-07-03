@@ -77,13 +77,13 @@ int ipwd_read_config (const char *filename)
 	config.facility = LOG_DAEMON;
 	config.script = NULL;
 	config.defend_interval = 0;
-	config.mode = IPWD_MODE_AUTOMATIC;
+	config.mode = IPWD_CONFIGURATION_MODE_AUTOMATIC;
 	devices.dev = NULL;
 	devices.devnum = 0;
 
 	if ((fr = fopen (filename, "r")) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to open configuration file %s", filename);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to open configuration file %s", filename);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -105,127 +105,127 @@ int ipwd_read_config (const char *filename)
 
 		if (sscanf (line, "%99s %399s", variable, value) != 2)
 		{
-			ipwd_message (IPWD_MSG_ERROR, "Not enough parameters in configuration file on line %d", linenum);
+			ipwd_message (IPWD_MSG_TYPE_ERROR, "Not enough parameters in configuration file on line %d", linenum);
 			return (IPWD_RV_ERROR);
 		}
 
 		/* Syslog Facility */
-		if (strcmp (variable, "syslog_facility") == 0)
+		if (strcasecmp (variable, "syslog_facility") == 0)
 		{
-			if (strcmp (value, "auth") == 0)
+			if (strcasecmp (value, "auth") == 0)
 			{
 				config.facility  = LOG_AUTH;
 				continue;
 			}
-			else if (strcmp (value, "authpriv") == 0)
+			else if (strcasecmp (value, "authpriv") == 0)
 			{
 				config.facility = LOG_AUTHPRIV;
 				continue;
 			}
-			else if (strcmp (value, "cron") == 0)
+			else if (strcasecmp (value, "cron") == 0)
 			{
 				config.facility = LOG_CRON;
 				continue;
 			}
-			else if (strcmp (value, "daemon") == 0)
+			else if (strcasecmp (value, "daemon") == 0)
 			{
 				config.facility = LOG_DAEMON;
 				continue;
 			}
-			else if (strcmp (value, "kern") == 0)
+			else if (strcasecmp (value, "kern") == 0)
 			{
 				config.facility = LOG_KERN;
 				continue;
 			}
-			else if (strcmp (value, "lpr") == 0)
+			else if (strcasecmp (value, "lpr") == 0)
 			{
 				config.facility = LOG_LPR;
 				continue;
 			}
-			else if (strcmp (value, "mail") == 0)
+			else if (strcasecmp (value, "mail") == 0)
 			{
 				config.facility = LOG_MAIL;
 				continue;
 			}
-			else if (strcmp (value, "news") == 0)
+			else if (strcasecmp (value, "news") == 0)
 			{
 				config.facility = LOG_NEWS;
 				continue;
 			}
-			else if (strcmp (value, "syslog") == 0)
+			else if (strcasecmp (value, "syslog") == 0)
 			{
 				config.facility = LOG_SYSLOG;
 				continue;
 			}
-			else if (strcmp (value, "user") == 0)
+			else if (strcasecmp (value, "user") == 0)
 			{
 				config.facility = LOG_USER;
 				continue;
 			}
-			else if (strcmp (value, "uucp") == 0)
+			else if (strcasecmp (value, "uucp") == 0)
 			{
 				config.facility = LOG_UUCP;
 				continue;
 			}
-			else if (strcmp (value, "local0") == 0)
+			else if (strcasecmp (value, "local0") == 0)
 			{
 				config.facility = LOG_LOCAL0;
 				continue;
 			}
-			else if (strcmp (value, "local1") == 0)
+			else if (strcasecmp (value, "local1") == 0)
 			{
 				config.facility = LOG_LOCAL1;
 				continue;
 			}
-			else if (strcmp (value, "local2") == 0)
+			else if (strcasecmp (value, "local2") == 0)
 			{
 				config.facility = LOG_LOCAL2;
 				continue;
 			}
-			else if (strcmp (value, "local3") == 0)
+			else if (strcasecmp (value, "local3") == 0)
 			{
 				config.facility = LOG_LOCAL3;
 				continue;
 			}
-			else if (strcmp (value, "local4") == 0)
+			else if (strcasecmp (value, "local4") == 0)
 			{
 				config.facility = LOG_LOCAL4;
 				continue;
 			}
-			else if (strcmp (value, "local5") == 0)
+			else if (strcasecmp (value, "local5") == 0)
 			{
 				config.facility = LOG_LOCAL5;
 				continue;
 			}
-			else if (strcmp (value, "local6") == 0)
+			else if (strcasecmp (value, "local6") == 0)
 			{
 				config.facility = LOG_LOCAL6;
 				continue;
 			}
-			else if (strcmp (value, "local7") == 0)
+			else if (strcasecmp (value, "local7") == 0)
 			{
 				config.facility = LOG_LOCAL7;
 				continue;
 			}
 			else
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : %s as a value of syslog_facility is not supported", value);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration parse error : %s as a value of syslog_facility is not supported", value);
 				return (IPWD_RV_ERROR);
 			}
 		}
 
 		/* Path to user-defined script */
-		if (strcmp (variable, "user_script") == 0)
+		if (strcasecmp (variable, "user_script") == 0)
 		{
 			if (ipwd_file_exists (value) == IPWD_RV_ERROR)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : file %s specified as user_script does not exist", value);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration parse error : file %s specified as user_script does not exist", value);
 				return (IPWD_RV_ERROR);
 			}
 	
 			if ((config.script = (char *) malloc ((strlen (value) + 1) * sizeof (char))) == NULL)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : malloc for user_script failed");
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration parse error : malloc for user_script failed");
 				return (IPWD_RV_ERROR);
 			}
 
@@ -234,13 +234,13 @@ int ipwd_read_config (const char *filename)
 		}
 
 		/* Minimum interval between defensive ARPs */
-		if (strcmp (variable, "defend_interval") == 0)
+		if (strcasecmp (variable, "defend_interval") == 0)
 		{
 			config.defend_interval = strtol (value, NULL, 10);
 
 			if ((config.defend_interval < 0) || (config.defend_interval > 600))
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Configuration parse error : defend_interval value must be between 0 and 600");
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration parse error : defend_interval value must be between 0 and 600");
 				return (IPWD_RV_ERROR);
 			}
 
@@ -248,26 +248,26 @@ int ipwd_read_config (const char *filename)
 		}
 
 		/* Configuration mode for network interfaces */
-		if (strcmp (variable, "iface_configuration") == 0)
+		if (strcasecmp (variable, "iface_configuration") == 0)
 		{
 			/* Check mode value */
-			if ((strcmp (value, "automatic") != 0) && (strcmp (value, "manual") != 0))
+			if ((strcasecmp (value, "automatic") != 0) && (strcasecmp (value, "manual") != 0))
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Configuration mode \"%s\" on line %d in configuration file not supported", value, linenum);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration mode \"%s\" on line %d in configuration file not supported", value, linenum);
 				return (IPWD_RV_ERROR);
 			}
 
 			/* Switch to manual mode if requested */
-			if (strcmp (value, "manual") == 0)
+			if (strcasecmp (value, "manual") == 0)
 			{
-				config.mode = IPWD_MODE_MANUAL;
+				config.mode = IPWD_CONFIGURATION_MODE_MANUAL;
 				continue;
 			}
 
 			/* Automatic mode is default */
 			if (ipwd_fill_devices () != IPWD_RV_SUCCESS)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Automatic configuration mode failed. Please switch to manual configuration mode.");
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Automatic configuration mode failed. Please switch to manual configuration mode.");
 				return (IPWD_RV_ERROR);
 			}
 
@@ -275,20 +275,20 @@ int ipwd_read_config (const char *filename)
 		}
 
 		/* Monitored interfaces */
-		if (strcmp (variable, "iface") == 0)
+		if (strcasecmp (variable, "iface") == 0)
 		{
 
 			/* Check if configuration mode is manual */
-			if (config.mode != IPWD_MODE_MANUAL)
+			if (config.mode != IPWD_CONFIGURATION_MODE_MANUAL)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Found iface variable in automatic configuration mode. Please check configuration file for logical errors");
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Found iface variable in automatic configuration mode. Please check configuration file for logical errors");
 				return (IPWD_RV_ERROR);
 			}
 
 			/* Read interface name and protection mode */
 			if (sscanf (line, "%*s %93s %399s", variable, value) != 2)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Not enough parameters in configuration file on line %d", linenum);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Not enough parameters in configuration file on line %d", linenum);
 				return (IPWD_RV_ERROR);
 			}
 	
@@ -296,49 +296,49 @@ int ipwd_read_config (const char *filename)
 			h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
 			if (h_pcap == NULL)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "IPwatchD is unable to work with interface \"%s\"", variable);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "IPwatchD is unable to work with interface \"%s\"", variable);
 				return (IPWD_RV_ERROR);
 			}
 
 			if (pcap_datalink (h_pcap) != DLT_EN10MB)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Device \"%s\" is not valid ethernet interface", variable);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Device \"%s\" is not valid ethernet interface", variable);
 				return (IPWD_RV_ERROR);
 			}
 
 			pcap_close (h_pcap);
 
 			/* Check mode value */
-			if ((strcmp (value, "active") != 0) && (strcmp (value, "passive") != 0))
+			if ((strcasecmp (value, "active") != 0) && (strcasecmp (value, "passive") != 0))
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Protection mode \"%s\" on line %d in configuration file not supported", value, linenum);
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Protection mode \"%s\" on line %d in configuration file not supported", value, linenum);
 				return (IPWD_RV_ERROR);
 			}
 
 			/* Put read values into devices structure */
 			if ((devices.dev = (IPWD_S_DEV *) realloc (devices.dev, (devices.devnum + 1) * sizeof (IPWD_S_DEV))) == NULL)
 			{
-				ipwd_message (IPWD_MSG_ERROR, "Unable to resize devices structure");
+				ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to resize devices structure");
 				return (IPWD_RV_ERROR);
 			}
 
-			strncpy (devices.dev[devices.devnum].device, variable, 9);
-			*(devices.dev[devices.devnum].device + 9) = '\0';
+			memset (devices.dev[devices.devnum].device, '\0', IPWD_MAX_DEVICE_NAME_LEN);
+			strncpy (devices.dev[devices.devnum].device, variable, IPWD_MAX_DEVICE_NAME_LEN - 1);
 
-			if (strcmp (value, "active") == 0)
+			if (strcasecmp (value, "active") == 0)
 			{
-				devices.dev[devices.devnum].mode = IPWD_MODE_ACTIVE;
+				devices.dev[devices.devnum].mode = IPWD_PROTECTION_MODE_ACTIVE;
 			}
 			else
 			{
-				devices.dev[devices.devnum].mode = IPWD_MODE_PASSIVE;
+				devices.dev[devices.devnum].mode = IPWD_PROTECTION_MODE_PASSIVE;
 			}
 
 			/* Set time of last conflict */
 			devices.dev[devices.devnum].time.tv_sec = 0;
 			devices.dev[devices.devnum].time.tv_usec = 0;
 
-			ipwd_message (IPWD_MSG_DEBUG, "Found interface %s", devices.dev[devices.devnum].device);
+			ipwd_message (IPWD_MSG_TYPE_DEBUG, "Found interface %s", devices.dev[devices.devnum].device);
 
 			devices.devnum = devices.devnum + 1;
 
@@ -350,21 +350,21 @@ int ipwd_read_config (const char *filename)
 
 	if (fclose (fr) == EOF)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to close configuration file %s", filename);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to close configuration file %s", filename);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Check number of discovered interfaces */
 	if (devices.devnum < 1)
 	{
-		if (config.mode == IPWD_MODE_MANUAL)
+		if (config.mode == IPWD_CONFIGURATION_MODE_MANUAL)
 		{
-			ipwd_message (IPWD_MSG_ERROR, "No interfaces specified in configuration file");
+			ipwd_message (IPWD_MSG_TYPE_ERROR, "No interfaces specified in configuration file");
 			return (IPWD_RV_ERROR);
 		}
 		else
 		{
-			ipwd_message (IPWD_MSG_ERROR, "No interfaces discovered");
+			ipwd_message (IPWD_MSG_TYPE_ERROR, "No interfaces discovered");
 			return (IPWD_RV_ERROR);
 		}
 	}

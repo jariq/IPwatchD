@@ -36,15 +36,15 @@ int ipwd_daemonize (void)
 {
 
 	/* Check if ipwatchd is running - only one daemon instance is allowed */
-        if (ipwd_check_pidfile () != IPWD_RV_SUCCESS) 
-        {
-                return (IPWD_RV_ERROR);
+	if (ipwd_check_pidfile () != IPWD_RV_SUCCESS) 
+	{
+		return (IPWD_RV_ERROR);
 	}
 
 	/* If parent of this process is init we are already in daemon mode */
 	if (getppid () == 1)
 	{
-		ipwd_message (IPWD_MSG_INFO, "Already running as daemon");
+		ipwd_message (IPWD_MSG_TYPE_INFO, "Already running as daemon");
 		return (IPWD_RV_SUCCESS);
 	}
 
@@ -52,7 +52,7 @@ int ipwd_daemonize (void)
 	pid_t pid = fork ();
 	if (pid < 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to fork a child process");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to fork a child process");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -73,42 +73,42 @@ int ipwd_daemonize (void)
 	pid_t sid = setsid ();
 	if (sid < 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to create a new session");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to create a new session");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Change current directory to root */
 	if ((chdir ("/")) == -1)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to change current directory to /");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to change current directory to /");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Redirect standard input */
 	if ((freopen ("/dev/null", "r", stdin)) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to redirect STDIN");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to redirect STDIN");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Redirect standard output */
 	if ((freopen ("/dev/null", "w", stdout)) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to redirect STDOUT");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to redirect STDOUT");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Redirect standard error output */
 	if ((freopen ("/dev/null", "w", stderr)) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to redirect STDERR");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to redirect STDERR");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Create PID file */
-        if (ipwd_create_pidfile () != IPWD_RV_SUCCESS)
-        {
-                return (IPWD_RV_ERROR);
+	if (ipwd_create_pidfile () != IPWD_RV_SUCCESS)
+	{
+		return (IPWD_RV_ERROR);
 	}
 
 	return (IPWD_RV_SUCCESS);
@@ -127,17 +127,17 @@ int ipwd_create_pidfile (void)
 
 	if ((fw = fopen (IPWD_PIDFILE, "w")) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to open PID file %s", IPWD_PIDFILE);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to open PID file %s", IPWD_PIDFILE);
 		return (IPWD_RV_ERROR);
 	}
 
 	if (fprintf (fw, "%d", getpid()) < 0) {
-		ipwd_message (IPWD_MSG_ERROR, "Unable to write process PID into PID file %s", IPWD_PIDFILE);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to write process PID into PID file %s", IPWD_PIDFILE);
 		return (IPWD_RV_ERROR);
 	}
 
 	if (fclose (fw) == EOF) {
-		ipwd_message (IPWD_MSG_ERROR, "Unable to close PID file %s", IPWD_PIDFILE);	
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to close PID file %s", IPWD_PIDFILE);	
 		return (IPWD_RV_ERROR);
 	}
 
@@ -159,9 +159,9 @@ int ipwd_check_pidfile (void)
 	char proc_pidfile[PATH_MAX];
 	int  proc_pidfile_pid = -1;
 
-	/* Fill buffers with nulls  */
-	memset (proc_this, 0, PATH_MAX);
-	memset (proc_pidfile, 0, PATH_MAX);
+	/* Fill buffers with nulls */
+	memset (proc_this, '\0', PATH_MAX);
+	memset (proc_pidfile, '\0', PATH_MAX);
 
 	/* Determine absolute path of executable for current process */
 	proc_this_pid = getpid ();
@@ -170,7 +170,7 @@ int ipwd_check_pidfile (void)
 
 	if (readlink (proc_this, proc_this, PATH_MAX) <= 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to get information about current process");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to get information about current process");
 		return (IPWD_RV_ERROR);
 	}
 	
@@ -179,23 +179,23 @@ int ipwd_check_pidfile (void)
 	{
 		if (errno == ENOENT)
 		{
-			// ipwd_message (IPWD_MSG_INFO, "Daemon can be executed because PID file %s does not exist", IPWD_PIDFILE);
+			ipwd_message (IPWD_MSG_TYPE_DEBUG, "Daemon can be executed because PID file %s does not exist", IPWD_PIDFILE);
 			return (IPWD_RV_SUCCESS);
 		}
 
-		ipwd_message (IPWD_MSG_ERROR, "Unable to open PID file %s", IPWD_PIDFILE);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to open PID file %s", IPWD_PIDFILE);
 		return (IPWD_RV_ERROR);
 	}
 
 	if (fscanf (fr, "%d", &proc_pidfile_pid) != 1)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to read PID from PID file %s", IPWD_PIDFILE);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to read PID from PID file %s", IPWD_PIDFILE);
 		return (IPWD_RV_ERROR);
 	}
 
 	if (fclose (fr) == EOF)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to close PID file %s", IPWD_PIDFILE);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to close PID file %s", IPWD_PIDFILE);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -206,19 +206,19 @@ int ipwd_check_pidfile (void)
 	{
 		if (errno == ENOENT)
 		{
-			// ipwd_message (IPWD_MSG_INFO, "Daemon can be executed because process specified in PID file %s does not exist", IPWD_PIDFILE);
+			ipwd_message (IPWD_MSG_TYPE_DEBUG, "Daemon can be executed because process specified in PID file %s does not exist", IPWD_PIDFILE);
 			return (IPWD_RV_SUCCESS);
 		}
 
-		ipwd_message (IPWD_MSG_ERROR, "Unable to get information about process specified in PID file");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to get information about process specified in PID file");
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Compare absolute path of executable for current process with absolute path of executable for process specified in PID file */
 	if (strcmp (proc_this, proc_pidfile) == 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "IPwatchD is already running");
-		return (IPWD_MSG_ERROR);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "IPwatchD is already running");
+		return (IPWD_MSG_TYPE_ERROR);
 	}
 
 	// ipwd_message (IPWD_MSG_INFO, "Daemon can be executed because process specified in PID file is not IPwatchD");
