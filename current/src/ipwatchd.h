@@ -45,7 +45,7 @@
 
 
 //! String with IPwatchD version information
-#define IPWATCHD_VERSION "IPwatchD 1.2"
+#define IPWATCHD_VERSION "IPwatchD 1.2.1"
 
 //! Absolute path to pid file
 #define IPWD_PIDFILE "/var/run/ipwatchd.pid"
@@ -65,17 +65,15 @@
 //! Size of buffer for output messages
 #define IPWD_MSG_BUFSIZ 1024
 
-//! Message type: information
-#define IPWD_MSG_INFO 1
-
-//! Message type: error
-#define IPWD_MSG_ERROR 2
-
-//! Message type: alert
-#define IPWD_MSG_ALERT 3
-
-//! Message type: debug
-#define IPWD_MSG_DEBUG 4
+//! Message type
+typedef enum
+{
+	IPWD_MSG_TYPE_INFO = 1,		/**< Message type: information */
+	IPWD_MSG_TYPE_ERROR = 2,	/**< Message type: error */
+	IPWD_MSG_TYPE_ALERT = 3,	/**< Message type: alert */
+	IPWD_MSG_TYPE_DEBUG = 4		/**< Message type: debug */
+}
+IPWD_MSG_TYPE;
 
 
 /* File operation options */
@@ -86,17 +84,21 @@
 
 /* Operation modes */
 
-//! Indicates active protection mode
-#define IPWD_MODE_ACTIVE 1
+//! Protection modes
+typedef enum
+{ 
+	IPWD_PROTECTION_MODE_ACTIVE = 1,		/**< Indicates active protection mode */
+	IPWD_PROTECTION_MODE_PASSIVE = 2,		/**< Indicates passive protection mode */
+}
+IPWD_PROTECTION_MODE;
 
-//! Indicates passive protection mode
-#define IPWD_MODE_PASSIVE 2
-
-//! Indicates automatic configuration mode
-#define IPWD_MODE_AUTOMATIC 3
-
-//! Indicates manual configuration mode
-#define IPWD_MODE_MANUAL 4
+//! Configuration modes
+typedef enum
+{ 
+	IPWD_CONFIGURATION_MODE_AUTOMATIC = 1,	/**< Indicates automatic configuration mode */
+	IPWD_CONFIGURATION_MODE_MANUAL = 2		/**< Indicates manual configuration mode */
+}
+IPWD_CONFIGURATION_MODE;
 
 
 /* Configuration */
@@ -104,32 +106,47 @@
 //! Structure that holds values of particular configuration variables
 typedef struct
 {
-	int facility;		/**< Syslog facility */
-	char * script;		/**< Absolute path to user-defined script */
-	int defend_interval;	/**< Minimum interval between defensive ARPs */
-	int mode;		/**< Configuration mode for network devices */
+	int facility;					/**< Syslog facility */
+	char * script;					/**< Absolute path to user-defined script */
+	int defend_interval;			/**< Minimum interval between defensive ARPs */
+	IPWD_CONFIGURATION_MODE mode;	/**< Configuration mode for network devices */
 }
 IPWD_S_CONFIG;
 
 
-/* Structures for network device information */
+/* Network device information */
+
+//! Size of buffer used for the name of the device
+#define IPWD_MAX_DEVICE_NAME_LEN 10
+
+//! Size of buffer used for IP and MAC address of the device
+#define IPWD_MAX_DEVICE_ADDRESS_LEN 20
+
+//! State of the device device indicating if it should be used in conflict detection process
+typedef enum
+{
+	IPWD_DEVICE_STATE_USABLE = 1,		/**< Device should be used in conflict detection process */
+	IPWD_DEVICE_STATE_UNUSABLE = 2		/**< Device should not be used in conflict detection process */
+}
+IPWD_DEVICE_STATE;
 
 //! Structure that holds information about ONE network interface
 typedef struct
 {
-	char device[10];	/**< Device name */
-	char ip[20];		/**< IP address of device */
-	char mac[20];		/**< MAC address of device */
-	int mode;		/**< IPwatch mode on interface: IPWATCHD_DEVICE_MODE_ACTIVE or IPWATCHD_DEVICE_MODE_PASSIVE */
-	struct timeval time;	/**< Time information indicating when the last conflict was detected */
+	char device[IPWD_MAX_DEVICE_NAME_LEN];		/**< Device name */
+	IPWD_DEVICE_STATE state;					/**< Indicates if device should be used in conflict detection process */
+	char ip[IPWD_MAX_DEVICE_ADDRESS_LEN];		/**< IP address of device */
+	char mac[IPWD_MAX_DEVICE_ADDRESS_LEN];		/**< MAC address of device */
+	IPWD_PROTECTION_MODE mode;					/**< IPwatch mode on interface */
+	struct timeval time;						/**< Time information indicating when the last conflict was detected */
 }
 IPWD_S_DEV;
 
 //! Structure that holds information about ALL network interfaces
 typedef struct
 {
-	IPWD_S_DEV *dev;	/**< Dynamicaly allocated array of IPWD_S_DEV structures */
-	int devnum;		/**< Number of watched interfaces */
+	IPWD_S_DEV *dev;		/**< Dynamicaly allocated array of IPWD_S_DEV structures */
+	int devnum;				/**< Number of watched interfaces */
 }
 IPWD_S_DEVS;
 
@@ -181,7 +198,7 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 void ipwd_print_help (void);
 
 /* message.c */
-void ipwd_message (int type, const char *format, ...);
+void ipwd_message (IPWD_MSG_TYPE type, const char *format, ...);
 
 /* signal.c */
 int ipwd_set_signal_handler (void);

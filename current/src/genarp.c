@@ -43,28 +43,28 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 	/* Convert source IP address */
 	if (inet_aton (p_sip, &sip) == 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to convert source IP address %s", p_sip);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to convert source IP address %s", p_sip);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Convert destination IP address */
 	if (inet_aton (p_dip, &dip) == 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to convert destination IP address %s", p_dip);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to convert destination IP address %s", p_dip);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Convert source MAC address */
 	if (ether_aton_r (p_smac, &smac) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to convert source MAC address %s", p_smac);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to convert source MAC address %s", p_smac);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Convert destination MAC address */
 	if (ether_aton_r (p_dmac, &dmac) == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to convert destination MAC address %s", p_dmac);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to convert destination MAC address %s", p_dmac);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -81,14 +81,14 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 	h_net = libnet_init (LIBNET_LINK_ADV, (char *) dev, errbuf);
 	if (h_net == NULL)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to initialize libnet1 - %s", errbuf);
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to initialize libnet1 - %s", errbuf);
 		return (IPWD_RV_ERROR);
 	}
 
 	/* Gratuitous ARP request will be created if destination MAC address is broadcast.
 	 * GARP requests from Windows and OpenBSD have destination MAC in ARP header
 	 * always set to 00:00:00:00:00:00 so we will do the same thing */
-	if ((strcmp (p_dmac, "ff:ff:ff:ff:ff:ff") == 0) && (opcode == ARPOP_REQUEST))
+	if ((strcasecmp (p_dmac, "ff:ff:ff:ff:ff:ff") == 0) && (opcode == ARPOP_REQUEST))
 	{
 		struct ether_addr nullmac;
 		char *null_mac = "00:00:00:00:00:00";
@@ -96,7 +96,7 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 		/* Convert null MAC address */
 		if (ether_aton_r (null_mac, &nullmac) == NULL)
 		{
-			ipwd_message (IPWD_MSG_ERROR, "Unable to convert destination MAC address for gratuitous ARP request");
+			ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to convert destination MAC address for gratuitous ARP request");
 			libnet_destroy (h_net);
 			return (IPWD_RV_ERROR);
 		}
@@ -118,7 +118,7 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 						arp );
 		if (arp == -1)
 		{
-			ipwd_message (IPWD_MSG_ERROR, "Unable to build ARP header: %s", libnet_geterror (h_net));
+			ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to build ARP header: %s", libnet_geterror (h_net));
 			libnet_destroy (h_net);
 			return (IPWD_RV_ERROR);
 		}
@@ -144,7 +144,7 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 						arp);
 		if (arp == -1)
 		{
-			ipwd_message (IPWD_MSG_ERROR, "Unable to build ARP header: %s", libnet_geterror (h_net));
+			ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to build ARP header: %s", libnet_geterror (h_net));
 			libnet_destroy (h_net);
 			return (IPWD_RV_ERROR);
 		}
@@ -156,7 +156,7 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 	ether = libnet_build_ethernet ((u_int8_t *) & dmac, (u_int8_t *) & smac, ETHERTYPE_ARP, NULL, 0, h_net, ether);
 	if (ether == -1)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to build ethernet header: %s", libnet_geterror (h_net));
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to build ethernet header: %s", libnet_geterror (h_net));
 		libnet_destroy (h_net);
 		return (IPWD_RV_ERROR);
 	}
@@ -165,13 +165,13 @@ int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const c
 	int c = libnet_write (h_net);
 	if (c == -1)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to send packet: %s", libnet_geterror (h_net));
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to send packet: %s", libnet_geterror (h_net));
 		libnet_destroy (h_net);
 		return (IPWD_RV_ERROR);
 	}
 	else
 	{
-		ipwd_message (IPWD_MSG_DEBUG, "Packet with size of %d bytes sent", c);
+		ipwd_message (IPWD_MSG_TYPE_DEBUG, "Packet with size of %d bytes sent", c);
 	}
 
 	libnet_destroy (h_net);

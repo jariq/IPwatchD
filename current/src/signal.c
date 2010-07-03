@@ -42,7 +42,7 @@ int ipwd_set_signal_handler (void)
 
 	if (sigaction (SIGTERM, &sigact, 0) != 0)
 	{
-		ipwd_message (IPWD_MSG_ERROR, "Unable to set SIGTERM handler");
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to set SIGTERM handler");
 		return (IPWD_RV_ERROR);
 	}
 
@@ -58,7 +58,7 @@ int ipwd_set_signal_handler (void)
 void ipwd_signal_handler (int signal)
 {
 
-	ipwd_message (IPWD_MSG_DEBUG, "Received signal %d", signal);
+	ipwd_message (IPWD_MSG_TYPE_DEBUG, "Received signal %d", signal);
 
 	if (signal == SIGTERM)
 	{
