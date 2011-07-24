@@ -7,7 +7,7 @@ and libnet1 installed in your system.
 To build IPwatchD G Notify (Notification tool for Gnome 
 environment) you will also need libnotify.
 
-On Ubuntu 8.04 it should be sufficient to install following packages:
+On Ubuntu 10.04 it should be sufficient to install following packages:
 
   - build-essential - C compiler and other development tools
   - libpcap-dev     - Network packet capture library
