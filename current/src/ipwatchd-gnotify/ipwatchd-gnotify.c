@@ -157,8 +157,12 @@ int main (int argc, char *argv[])
 		{
 			return (IPWDGN_RV_ERROR);
 		}
-		
+
+#if NOTIFY_CHECK_VERSION(0,7,0)
+		notify = notify_notification_new (title, message, GTK_STOCK_DIALOG_WARNING);
+#else
 		notify = notify_notification_new (title, message, GTK_STOCK_DIALOG_WARNING, NULL);
+#endif
 		notify_notification_set_urgency (notify, NOTIFY_URGENCY_CRITICAL);
 		notify_notification_set_timeout (notify, NOTIFY_EXPIRES_DEFAULT);
 		notify_notification_show (notify, NULL);

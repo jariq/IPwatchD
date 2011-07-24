@@ -29,8 +29,12 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <sys/wait.h>
+#include <gtk/gtk.h>
 #include <libnotify/notify.h>
 
+#ifndef NOTIFY_CHECK_VERSION
+#define NOTIFY_CHECK_VERSION(x,y,z) 0
+#endif
 
 //! String with IPwatchD G Notify version information
 #define IPWATCHD_GNOTIFY_VERSION "IPwatchD G Notify 1.0"
