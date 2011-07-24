@@ -55,14 +55,16 @@ You can uninstall IPwatchD G Notify as root with command:
 What gets installed
 -------------------
 
-/etc/ipwatchd.conf                 - configuration file
-/etc/init.d/ipwatchd               - init script
-/usr/sbin/ipwatchd                 - daemon executable
-/usr/sbin/ipwatchd-script          - user-defined script
-/usr/share/man/man8/ipwatchd.8.gz  - manual page
+/etc/ipwatchd.conf                         - configuration file
+/etc/init.d/ipwatchd                       - init script
+/usr/sbin/ipwatchd                         - daemon executable
+/usr/sbin/ipwatchd-script                  - user-defined script
+/usr/share/man/man8/ipwatchd.8.gz          - manual page
+/usr/share/man/man5/ipwatchd.conf.5.gz     - manual page
+/usr/share/man/man1/ipwatchd-script.1.gz   - manual page
 
-/usr/sbin/ipwatchd-gnotify         - gnome notification tool
-
+/usr/sbin/ipwatchd-gnotify                 - gnome notification tool
+/usr/share/man/man1/ipwatchd-gnotify.1.gz  - manual page
 
 IPwatchD configuration
 ----------------------
