@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# This user-defined script is called by IPwatchD daemon when IP conflict occurs.
+# Feel free to modify it to suit your needs.
+
+# Name of network device in conflict
+DEVICE=$1
+
+# IP address in conflict
+IP=$2
+
+# MAC address of conflicting system
+MAC=$3
+
+# Run notification tool for Gnome environment
+if [ -x /usr/sbin/ipwatchd-gnotify ]; then
+	/usr/sbin/ipwatchd-gnotify \
+		--broadcast \
+		--title "IP conflict occured" \
+		--message "MAC address $MAC causes IP conflict with address $IP set on interface $DEVICE"
+fi
+
+exit 0
+

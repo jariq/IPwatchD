@@ -1,0 +1,30 @@
+.TH IPWATCHD-SCRIPT 1
+.SH NAME
+ipwatchd-script \- User-defined script called by IPwatchD daemon when IP conflict occurs
+.SH SYNOPSIS
+.B ipwatchd-script
+.I device
+.I IP_address
+.I MAC_address
+.SH DESCRIPTION
+This script is executed by IPwatchD daemon when IP conflict occurs. It uses IPwatchD-G-Notify (if available) to display warning message in Gnome sessions. System administrator can write own script to handle IP conflicts and instruct IPwatchD daemon to use it by modification of
+.B user_script
+directive in its configuration file.
+.PP
+.SH OPTIONS
+Following options are passed by IPwatchD daemon:
+.TP
+.B "device"
+Name of network device in conflict.
+.TP
+.B "IP_address"
+IP address in conflict.
+.TP
+.B "MAC_address"
+MAC address of conflicting system.
+.SH AUTHOR
+This manual page was written by Jaroslav Imrich <jariq@jariq.sk>
+.SH SEE ALSO
+.BR ipwatchd (8),
+.BR ipwatchd.conf (5),
+.BR ipwatchd-gnotify (1)
