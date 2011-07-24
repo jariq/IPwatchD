@@ -130,7 +130,8 @@ void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char
 			}
 			else
 			{
-				ipwd_message (IPWD_MSG_TYPE_DEBUG, "False posivite detected. Maybe there is more than one interface connected to the same subnet?");
+				/* Happens when there is more than one interface connected to the same subnet */
+				ipwd_message (IPWD_MSG_TYPE_DEBUG, "ARP packet ignored because it comes from local machine.");
 			}
 
 			return;
