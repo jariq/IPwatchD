@@ -37,7 +37,7 @@
 #endif
 
 //! String with IPwatchD G Notify version information
-#define IPWATCHD_GNOTIFY_VERSION "IPwatchD G Notify 1.0"
+#define IPWATCHD_GNOTIFY_VERSION "IPwatchD G Notify 1.0.1"
 
 //! Size of buffer for output messages
 #define IPWDGN_MSG_BUFSIZ  1000
