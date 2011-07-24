@@ -1,0 +1,65 @@
+.TH IPWATCHD.CONF 5
+.SH NAME
+ipwatchd.conf \- Configuration file of IPwatchD daemon
+.SH SYNOPSIS
+.B /etc/ipwatchd.conf
+.SH DESCRIPTION
+IPwatchD daemon reads configuration from file specified with -c on command line. The file contains keyword-argument pairs, one per line. Lines beginning with # sign and empty lines are ignored.
+.PP
+Possible keywords and their meanings are as follows:
+.TP
+.B iface_configuration
+Specifies configuration mode for network interfaces. In
+.B automatic
+configuration mode IPwatchD detects all network interfaces automatically and sets passive protection mode for them. In
+.B manual
+mode it is up to administrator to specify list of interfaces and protection modes. Accepted values are automatic or manual. Default is automatic.
+.TP
+.B iface
+Specifies network interface and its protection mode. Value is accepted only in manual configuration mode. In
+.B active
+protection mode IPwatchD protects your host before IP takeover by answering Gratuitous ARP requests received from conflicting system. In
+.B passive
+protection mode it just records information about IP conflict through standard syslog interface. Specified interface must exist and protection mode must be passive or active.
+.TP
+.B defend_interval
+Specifies minimum interval between defensive ARPs in seconds. Accepted value is number from 0 to 600. Default value is 0.
+.TP
+.B user_script
+Specifies absolute path to user-defined script called by IPwatchD when IP conflict occurs. When there is no script specified IPwatchD just generates syslog event for every IP conflict. Specified file must exist. There is no default value.
+.TP
+.B syslog_facility
+Specifies facility for logging. Accepted values are auth, authpriv, cron, daemon, kern, lpr, mail, news, syslog, user, uucp, local0, local1, local2, local3, local4, local5, local6 and local7. Default value is daemon.
+.SH EXAMPLES
+.B Automatic configuration mode:
+.RS
+.PP
+iface_configuration automatic
+.br
+defend_interval 10
+.br
+user_script /usr/sbin/ipwatchd-script
+.br
+syslog_facility daemon
+.RE
+.PP
+.B Manual configuration mode:
+.RS
+.PP
+iface_configuration manual
+.br
+iface eth0 active
+.br
+iface eth0:0 passive
+.br
+defend_interval 10
+.br
+user_script /usr/sbin/ipwatchd-script
+.br
+syslog_facility daemon
+.RE
+.SH AUTHOR
+This manual page was written by Jaroslav Imrich <jariq@jariq.sk>
+.SH SEE ALSO
+.BR ipwatchd (8),
+.BR ipwatchd-script (1)

@@ -1,0 +1,60 @@
+.TH IPWATCHD 8
+.SH NAME
+ipwatchd \- IP conflict detection tool for Linux
+.SH SYNOPSIS
+.B ipwatchd --config
+.I config_file
+.B [\-\-debug]
+.B [\-\-test]
+.br
+.B ipwatchd \-\-version
+.br
+.B ipwatchd \-\-help
+.SH DESCRIPTION
+IPwatchD is a simple daemon that analyses all incoming ARP packets in order to detect IP conflicts.
+.PP
+Default configuration file uses "automatic configuration mode" with "passive protection mode" and it should be the best option for most systems.
+.PP
+Configuration mode applies to the daemon instance and it specifies how the list of network interfaces that should be monitored will be obtained. In
+.B automatic
+configuration mode IPwatchD detects all network interfaces automatically and sets passive protection mode for them. In
+.B manual
+configuration mode it is up to the system administrator to specify list of interfaces and protection modes in configuration file.
+.PP
+Protection mode specifies the action that will be performed when IP conflict is detected. In
+.B active
+protection mode IPwatchD protects your host before IP takeover by answering gratuitous ARP requests received from conflicting system. In
+.B passive
+protection mode it just records information about IP conflict through standard syslog interface.
+.PP
+IPwatchD also supports execution of user defined scripts. See
+.BR ipwatchd.conf (5)
+and
+.BR ipwatchd-script (1)
+for more details.
+.SH OPTIONS
+The following options are supported:
+.TP
+.B "\-c \-\-config"
+Specifies path to configuration file.
+.TP
+.B "\-d \-\-debug"
+Enables debug mode. Debug information are recorded through syslog with "daemon" facility and "debug" priority.
+.TP
+.B "\-t \-\-test"
+Enables testing mode that is useful only for debugging. In this mode every received ARP packet is considered to be conflicting.
+.TP
+.B "\-v \-\-version"
+Prints program version to standard output.
+.TP
+.B "\-h \-\-help"
+Prints short help information to standard output.
+.SH CONFIGURATION
+See
+.BR ipwatchd.conf (5)
+for more details.
+.SH AUTHOR
+This manual page was written by Jaroslav Imrich <jariq@jariq.sk>
+.SH SEE ALSO
+.BR ipwatchd.conf (5),
+.BR ipwatchd-script (1)
