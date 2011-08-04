@@ -1,0 +1,26 @@
+########################################################
+# This was written and is maintained by:
+#    Pavol Zavacky <pavol.zavacky@stuba.sk>
+#
+# Please send all comments, suggestions, bug reports,
+#    etc, to pavol.zavacky@stuba.sk
+########################################################
+
+########################################################
+#
+# Copyright (c) 2011 Pavol Zavacky
+#
+# This logwatch addon is released under the terms of  
+# GNU General Public License version 2
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+#
+#######################################################
+
+1. Unpack all files to your logwatch directory
+   - standard debian directory is /usr/share/logwatch
+
+2. Run ipwatchd with -t in test mode, to log some packets
+
+3. Run logwatch and check your email for IPwatchD notice
+
+
