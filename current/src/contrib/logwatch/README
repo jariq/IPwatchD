@@ -16,6 +16,12 @@
 #
 #######################################################
 
+#######################################################
+#
+# This addon was tested with logwatch 7.3.6 on Ubuntu 10.04
+#
+#######################################################
+
 1. Unpack all files to your logwatch directory
    - standard debian directory is /usr/share/logwatch
 
