@@ -1,0 +1,108 @@
+#!/usr/bin/perl
+
+#####################################################################
+# This was written and is maintained by:
+#    Pavol Zavacky <pavol.zavacky@stuba.sk>
+#
+# Please send all comments, suggestions, bug reports,
+#    etc, to pavol.zavacky@stuba.sk
+#####################################################################
+
+#####################################################################
+#
+# Copyright (c) 2011 Pavol Zavacky
+#
+# This Logwatch addon is released under the terms of  
+# GNU General Public License version 2
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+#
+#####################################################################
+
+#####################################################################
+# ipwatchd v 0.1, 2011/08/03
+#####################################################################
+
+use Logwatch ':all';
+
+my $Detail = $ENV{'LOGWATCH_DETAIL_LEVEL'} || 0;
+my $Debug = $ENV{'LOGWATCH_DEBUG'} || 0;
+
+my %conflicts;
+my %state;
+my %OtherList;
+my %errs;
+
+if ( $Debug >= 5 ) {
+    print STDERR "\n\nDEBUG: Inside ipwatchd Filter \n\n";
+    $DebugCounter = 1;
+}
+
+while ( defined(my $ThisLine = <STDIN>)) {
+    if ( $Debug >= 5) {
+	print STDERR "DEBUG($DebugCounter): $ThisLine";
+	$DebugCounter ++;
+    }
+    
+    chomp($ThisLine);
+    # We don`t care about these
+    if 	( 
+	($ThisLine =~ m/^Entering pcap loop$/) or
+	($ThisLine =~ m/^Found device/) or
+	($ThisLine =~ m/^Received signal/) or
+	($ThisLine =~ m/^Device info/) or
+	($ThisLine =~ m/^Received ARP packet/) or
+	($ThisLine =~ m/^Running user\-defined script\: /)
+	) {
+	    # We don`t care do nothing
+	} elsif ( my ($running) = ($ThisLine =~/^IPwatchD (.*)/)){
+	    $state{$running}++;
+	} elsif ( my ($mac,$ip,$if,$action) = ($ThisLine =~/^MAC address (.*) causes IP conflict with address (.*) set on interface (.*) - (.*)/)){
+	    $conflicts{"MAC: $mac \n\t Conflicted IP: $ip \n\t on interface: $if \n\t Taken action: $action"}++;
+	} elsif ( my ($err) = ($ThisLine =~/^Unable (.*)/)){
+	    $errs{"Failed: $err"}++;
+	} else {
+	    #Report unmatched entries
+	    $OtherList{$ThisLine}++;
+	}
+}
+
+########################################################################
+
+if (keys %state) {
+    print "\n**IPwatchD**\n";
+    foreach my $key (keys %state) {
+	my $total = 0;
+	$total += $state{$key};
+	my $pl = ($total > 1) ? "s" : "";
+	print "\t$key: $total time$pl\n";
+    }
+}
+
+if (keys %errs) {
+    print "\n**Errors**\n";
+    foreach my $key (keys %errs) {
+	my $total = 0;
+	$total += $errs{$key};
+	my $pl = ($total > 1) ? "s" : "";
+	print "\t$key: $total time$pl\n";
+    }
+}
+
+if (keys %conflicts) {
+    print "\n**Conflicts**\n";
+    foreach my $key (keys %conflicts) {
+	my $total = 0;
+	$total += $conflicts{$key};
+	my $pl = ($total > 1) ? "s" : "";
+	print "\t$key \n\t$total time$pl\n";
+    }
+}
+
+if (keys %OtherList) {
+   print "\n**Unmatched Entries**\n";
+   foreach $line (sort {$OtherList{$b}<=>$OtherList{$a} } keys %OtherList) {
+      print "\t$line: $OtherList{$line} Time(s)\n";
+   }
+}
+ 
+exit(0);
