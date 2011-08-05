@@ -20,11 +20,27 @@
 #
 # This addon was tested with logwatch 7.3.6 on Ubuntu 10.04
 #
+# Changelog 
+#
+# v 0.2
+# - filtering messages from syslog
+# - enabled logwatch function ExpandRepeats
+#
+# v 0.1
+# - created filter addon
+# - filtering messages from daemon.log
+#
 #######################################################
 
+
 1. Unpack all files to your logwatch directory
+   
    - standard debian directory is /usr/share/logwatch
 
+   - Logwatch in standard conf looks also in log archives, if 
+     you don`t want to see old logged conflicts just uncommet
+     line Archives = No in logatch.conf
+     
 2. Run ipwatchd with -t in test mode, to log some packets
 
 3. Run logwatch and check your email for IPwatchD notice
