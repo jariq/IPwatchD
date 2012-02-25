@@ -4,11 +4,12 @@
 CC= gcc
 CFLAGS= -g -Wall -O2
 GTK_CFLAGS=`pkg-config --cflags gtk+-2.0`
+GTK_LIBS=`pkg-config --libs gtk+-2.0`
 LIBNOTIFY_CFLAGS=`pkg-config --cflags libnotify`
 LIBNOTIFY_LIBS=`pkg-config --libs libnotify`
 
 all: ipwatchd-gnotify.c ipwatchd-gnotify.h
-	$(CC) $(CFLAGS) $(GTK_CFLAGS) $(LIBNOTIFY_CFLAGS) ipwatchd-gnotify.c -o ipwatchd-gnotify $(LIBNOTIFY_LIBS)
+	$(CC) $(CFLAGS) $(GTK_CFLAGS) $(LIBNOTIFY_CFLAGS) ipwatchd-gnotify.c -o ipwatchd-gnotify $(GTK_LIBS) $(LIBNOTIFY_LIBS)
 
 clean:
 	-rm -f ipwatchd-gnotify
