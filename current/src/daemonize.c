@@ -133,7 +133,7 @@ int ipwd_create_pidfile (void)
 
 	if (fprintf (fw, "%d", getpid()) < 0) {
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to write process PID into PID file %s", IPWD_PIDFILE);
-		flose (fw);
+		fclose (fw);
 		return (IPWD_RV_ERROR);
 	}
 
