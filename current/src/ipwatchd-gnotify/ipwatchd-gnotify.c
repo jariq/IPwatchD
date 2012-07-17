@@ -337,6 +337,7 @@ int ipwdgn_read_file (const char * filename, char ** content)
 	{
 		if ((c = (char *) realloc(c, cl + rl)) == NULL)
 		{
+			close (fd);
 			return IPWDGN_RV_ERROR;
 		}
 

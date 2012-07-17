@@ -133,6 +133,7 @@ int ipwd_create_pidfile (void)
 
 	if (fprintf (fw, "%d", getpid()) < 0) {
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to write process PID into PID file %s", IPWD_PIDFILE);
+		flose (fw);
 		return (IPWD_RV_ERROR);
 	}
 
@@ -190,6 +191,7 @@ int ipwd_check_pidfile (void)
 	if (fscanf (fr, "%d", &proc_pidfile_pid) != 1)
 	{
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to read PID from PID file %s", IPWD_PIDFILE);
+		fclose (fr);
 		return (IPWD_RV_ERROR);
 	}
 
