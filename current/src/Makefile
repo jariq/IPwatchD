@@ -50,7 +50,7 @@ install:
 	mkdir -p $(DESTDIR)/usr/share/man/man1
 	cp ipwatchd $(DESTDIR)/usr/sbin
 	cp scripts/ipwatchd-script $(DESTDIR)/usr/sbin
-	cp scripts/ipwatchd $(DESTDIR)/etc/init.d
+	cp scripts/debian/ipwatchd $(DESTDIR)/etc/init.d
 	cp ipwatchd.conf $(DESTDIR)/etc
 	cp ../doc/ipwatchd.8.gz $(DESTDIR)/usr/share/man/man8
 	cp ../doc/ipwatchd.conf.5.gz $(DESTDIR)/usr/share/man/man5
