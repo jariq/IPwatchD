@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# ipwatchd           Startup script for ipwatchd.
+#
+# chkconfig: 2345 26 74
+# description: IPwatchD is simple daemon that analyses all \
+#              incoming ARP packets in order to detect IP conflicts.
+#
+### BEGIN INIT INFO
+# Provides:          ipwatchd
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: IP conflict detection daemon
+# Description:       IPwatchD is simple daemon that analyses all
+#                    incoming ARP packets in order to detect IP conflicts
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+IPWDNAME=ipwatchd
+IPWDBIN=/usr/sbin/$IPWDNAME
+IPWDCFG=/etc/ipwatchd.conf
+IPWDARGS="-c $IPWDCFG"
+IPWDPID=/var/run/$IPWDNAME.pid
+IPWDLOCK=/var/lock/subsys/$IPWDNAME
+
+# Function that starts daemon
+start() {
+	[ -x "$IPWDBIN" ] || exit 5
+	if [ $UID -ne 0 ] ; then
+		echo "Only root can start $IPWDNAME"
+		exit 4
+	fi
+	echo -n $"Starting $IPWDNAME: "
+	daemon $IPWDBIN $IPWDARGS
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch $IPWDLOCK
+	echo
+	return $RETVAL
+}
+
+# Function that stops daemon
+stop() {
+	[ -x "$IPWDBIN" ] || exit 5
+	if [ $UID -ne 0 ] ; then
+		echo "Only root can stop $IPWDNAME"
+		exit 4
+	fi
+	echo -n $"Shutting down $IPWDNAME: "
+	killproc -p $IPWDPID $IPWDBIN
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f $IPWDLOCK
+	echo
+	return $RETVAL
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		status -p $IPWDPID $IPWDNAME
+		;;
+	restart)
+		stop
+		start
+		;;
+	reload)
+		stop
+		start
+		;;
+	condrestart)
+		[ -f "$IPWDLOCK" ] && restart || :
+		;;
+	*)
+		echo "Usage: $IPWDNAME {start|stop|status|restart|reload|condrestart}"
+		exit 1
+		;;
+esac
+
+exit $?
+

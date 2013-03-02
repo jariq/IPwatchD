@@ -1,0 +1,15 @@
+# Copy this file to /lib/systemd/system
+
+[Unit]
+Description=IP conflict detection daemon
+After=syslog.target network.target
+
+# Type=Simple can be used because ipwatchd does not fork
+# if its parent has PID=0.
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/ipwatchd -c /etc/ipwatchd.conf
+
+[Install]
+WantedBy=multi-user.target
