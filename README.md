@@ -127,6 +127,7 @@ Extract the code and build it:
     $ gunzip ipwatchd-1.2.1.tar.gz
     $ tar -xf ipwatchd-1.2.1.tar
     $ cd ipwatchd-1.2.1/src
+    $ apt-get install libnet1-dev libpcap-dev
     $ make
 
 You can install IPwatchD as root with command:
@@ -146,6 +147,7 @@ Extract the code and build it:
     $ gunzip ipwatchd-gnotify-1.0.1.tar.gz
     $ tar -xf ipwatchd-gnotify-1.0.1.tar
     $ cd ipwatchd-gnotify-1.0.1/src
+    $ apt-get install libnet1-dev libpcap-dev
     $ make
 
 You can install IPwatchD G Notify as root with command:

@@ -32,6 +32,9 @@ int syslog_flag = 0;
 //! Flag indicating testing mode when every ARP packet is considered to be conflicting
 int testing_flag = 0;
 
+// ! Flag indicating run with daemon mode or foreground mode.
+int daemon_flag = 1;
+
 //! Structure that holds information about network interfaces
 IPWD_S_DEVS devices;
 
@@ -68,10 +71,11 @@ int main (int argc, char *argv[])
 			{ "test", no_argument, 0, 't' },
 			{ "help", no_argument, 0, 'h' },
 			{ "version", no_argument, 0, 'v' },
+			{ "nodaemon", no_argument, 0, 'n' },
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long (argc, argv, "c:dthv", long_options, &option_index);
+		c = getopt_long (argc, argv, "c:dthvn", long_options, &option_index);
 
 		if (c == -1)
 		{
@@ -102,6 +106,10 @@ int main (int argc, char *argv[])
 
 			case 't':
 				testing_flag = 1;
+				break;
+
+			case 'n':
+				daemon_flag = 0;
 				break;
 
 			case 'h':
@@ -156,7 +164,7 @@ int main (int argc, char *argv[])
 	config_file = NULL;
 
 	/* Daemonize */
-	if (ipwd_daemonize () != IPWD_RV_SUCCESS)
+	if (ipwd_daemonize (daemon_flag) != IPWD_RV_SUCCESS)
 	{
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to daemonize");
 		return (IPWD_RV_ERROR);

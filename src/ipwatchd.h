@@ -183,7 +183,7 @@ int ipwd_file_exists (const char *filename);
 int ipwd_read_config (const char *filename);
 
 /* daemonize.c */
-int ipwd_daemonize (void);
+int ipwd_daemonize (int daemon_flag);
 int ipwd_create_pidfile (void);
 int ipwd_check_pidfile (void);
 
