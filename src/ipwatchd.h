@@ -117,7 +117,7 @@ IPWD_S_CONFIG;
 /* Network device information */
 
 //! Size of buffer used for the name of the device
-#define IPWD_MAX_DEVICE_NAME_LEN 10
+#define IPWD_MAX_DEVICE_NAME_LEN IFNAMSIZ
 
 //! Size of buffer used for IP and MAC address of the device
 #define IPWD_MAX_DEVICE_ADDRESS_LEN 20
