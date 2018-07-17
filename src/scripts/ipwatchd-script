@@ -16,7 +16,7 @@ MAC=$3
 if [ -x /usr/sbin/ipwatchd-gnotify ]; then
 	/usr/sbin/ipwatchd-gnotify \
 		--broadcast \
-		--title "IP conflict occured" \
+		--title "IP conflict occurred" \
 		--message "MAC address $MAC causes IP conflict with address $IP set on interface $DEVICE"
 fi
 
