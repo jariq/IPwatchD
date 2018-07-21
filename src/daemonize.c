@@ -155,21 +155,25 @@ int ipwd_check_pidfile (void)
 {
 
 	FILE * fr = NULL;
-	char proc_this[PATH_MAX];
+	char proc_this_lnk[PATH_MAX];
+	char proc_this_bin[PATH_MAX];
 	int  proc_this_pid = -1;
-	char proc_pidfile[PATH_MAX];
+	char proc_pidfile_lnk[PATH_MAX];
+	char proc_pidfile_bin[PATH_MAX];
 	int  proc_pidfile_pid = -1;
 
 	/* Fill buffers with nulls */
-	memset (proc_this, '\0', PATH_MAX);
-	memset (proc_pidfile, '\0', PATH_MAX);
+	memset (proc_this_lnk, '\0', PATH_MAX);
+	memset (proc_this_bin, '\0', PATH_MAX);
+	memset (proc_pidfile_lnk, '\0', PATH_MAX);
+	memset (proc_pidfile_bin, '\0', PATH_MAX);
 
 	/* Determine absolute path of executable for current process */
 	proc_this_pid = getpid ();
 
-	snprintf (proc_this, PATH_MAX, "/proc/%d/exe", proc_this_pid);
+	snprintf (proc_this_lnk, PATH_MAX, "/proc/%d/exe", proc_this_pid);
 
-	if (readlink (proc_this, proc_this, PATH_MAX) <= 0)
+	if (readlink (proc_this_lnk, proc_this_bin, PATH_MAX) <= 0)
 	{
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to get information about current process");
 		return (IPWD_RV_ERROR);
@@ -202,9 +206,9 @@ int ipwd_check_pidfile (void)
 	}
 
 	/* Determine absolute path of executable for process specified in PID file */
-	snprintf (proc_pidfile, PATH_MAX, "/proc/%d/exe", proc_pidfile_pid);
+	snprintf (proc_pidfile_lnk, PATH_MAX, "/proc/%d/exe", proc_pidfile_pid);
 
-	if (readlink (proc_pidfile, proc_pidfile, PATH_MAX) <= 0)
+	if (readlink (proc_pidfile_lnk, proc_pidfile_bin, PATH_MAX) <= 0)
 	{
 		if (errno == ENOENT)
 		{
@@ -217,7 +221,7 @@ int ipwd_check_pidfile (void)
 	}
 
 	/* Compare absolute path of executable for current process with absolute path of executable for process specified in PID file */
-	if (strcmp (proc_this, proc_pidfile) == 0)
+	if (strcmp (proc_this_bin, proc_pidfile_bin) == 0)
 	{
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "IPwatchD is already running");
 		return (IPWD_MSG_TYPE_ERROR);
