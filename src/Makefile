@@ -6,7 +6,7 @@ CFLAGS= -g -Wall -O2
 LIBS= -lpcap -lnet
 
 all: analyse.o config.o daemonize.o devinfo.o genarp.o ipwatchd.o message.o signal.o
-	$(CC) $(CFLAGS) analyse.o config.o daemonize.o devinfo.o genarp.o \
+	$(CC) $(CFLAGS) $(LDFLAGS) analyse.o config.o daemonize.o devinfo.o genarp.o \
 	ipwatchd.o message.o signal.o -o ipwatchd $(LIBS)
 
 
