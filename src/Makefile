@@ -43,14 +43,15 @@ distclean: clean
 
 
 install:
-	mkdir -p $(DESTDIR)/etc/init.d
+	mkdir -p $(DESTDIR)/etc
+	mkdir -p $(DESTDIR)/lib/systemd/system
 	mkdir -p $(DESTDIR)/usr/sbin
 	mkdir -p $(DESTDIR)/usr/share/man/man8
 	mkdir -p $(DESTDIR)/usr/share/man/man5
 	mkdir -p $(DESTDIR)/usr/share/man/man1
 	cp ipwatchd $(DESTDIR)/usr/sbin
-	cp scripts/ipwatchd-script $(DESTDIR)/usr/sbin
-	cp scripts/debian/ipwatchd $(DESTDIR)/etc/init.d
+	cp ipwatchd-script $(DESTDIR)/usr/sbin
+	cp ipwatchd.service $(DESTDIR)/lib/systemd/system
 	cp ipwatchd.conf $(DESTDIR)/etc
 	cp ../doc/ipwatchd.8.gz $(DESTDIR)/usr/share/man/man8
 	cp ../doc/ipwatchd.conf.5.gz $(DESTDIR)/usr/share/man/man5
@@ -59,7 +60,7 @@ install:
 uninstall:
 	rm $(DESTDIR)/usr/sbin/ipwatchd
 	rm $(DESTDIR)/usr/sbin/ipwatchd-script
-	rm $(DESTDIR)/etc/init.d/ipwatchd
+	rm $(DESTDIR)/lib/systemd/system/ipwatchd.service
 	rm $(DESTDIR)/etc/ipwatchd.conf
 	rm $(DESTDIR)/usr/share/man/man8/ipwatchd.8.gz
 	rm $(DESTDIR)/usr/share/man/man5/ipwatchd.conf.5.gz

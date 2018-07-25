@@ -1,0 +1,11 @@
+[Unit]
+Description=IP conflict detection daemon
+Documentation=man:ipwatchd(8) man:ipwatchd.conf(5) man:ipwatchd-script(1)
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/ipwatchd -c /etc/ipwatchd.conf
+
+[Install]
+WantedBy=multi-user.target

@@ -41,13 +41,6 @@ int ipwd_daemonize (void)
 		return (IPWD_RV_ERROR);
 	}
 
-	/* If parent of this process is init we are already in daemon mode */
-	if (getppid () == 1)
-	{
-		ipwd_message (IPWD_MSG_TYPE_INFO, "Already running as daemon");
-		return (IPWD_RV_SUCCESS);
-	}
-
 	/* Fork child process */
 	pid_t pid = fork ();
 	if (pid < 0)
