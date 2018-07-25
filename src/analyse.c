@@ -1,5 +1,5 @@
 /* IPwatchD - IP conflict detection tool for Linux
- * Copyright (C) 2007-2010 Jaroslav Imrich <jariq(at)jariq(dot)sk>
+ * Copyright (C) 2007-2018 Jaroslav Imrich <jariq(at)jariq(dot)sk>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
