@@ -45,7 +45,7 @@
 
 
 //! String with IPwatchD version information
-#define IPWATCHD_VERSION "IPwatchD 1.2.1"
+#define IPWATCHD_VERSION "IPwatchD 1.3.0"
 
 //! Absolute path to pid file
 #define IPWD_PIDFILE "/var/run/ipwatchd.pid"
