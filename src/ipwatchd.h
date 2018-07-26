@@ -173,7 +173,7 @@ IPWD_S_ARP_HEADER;
 
 /* IPwatchD internal functions - described in corresponding source files */
 
-// \cond - Doxygen ignore block start
+// \cond Doxygen ignore block start
 
 /* analyse.c */
 void ipwd_analyse (u_char * args, const struct pcap_pkthdr *header, const u_char * packet);
@@ -204,5 +204,5 @@ void ipwd_message (IPWD_MSG_TYPE type, const char *format, ...);
 int ipwd_set_signal_handler (void);
 void ipwd_signal_handler (int signal);
 
-// \endcond - Doxygen ignore block end
+// \endcond Doxygen ignore block end
 
