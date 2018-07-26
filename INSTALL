@@ -4,7 +4,7 @@ IPwatchD requirements
 To build IPwatchD from source code you will need gcc, libpcap 
 and libnet1 installed in your system.
 
-On Ubuntu 10.04 it should be sufficient to install following packages:
+On Ubuntu 18.04 it should be sufficient to install following packages:
 
   - build-essential - C compiler and other development tools
   - libpcap-dev     - Network packet capture library
@@ -32,8 +32,8 @@ You can uninstall IPwatchD as root with command:
 What gets installed
 -------------------
 
-/etc/ipwatchd.conf                         - configuration file
-/etc/init.d/ipwatchd                       - init script
+/etc/ipwatchd.conf                         - daemon configuration file
+/lib/systemd/system/ipwatchd.service       - systemd service configuration
 /usr/sbin/ipwatchd                         - daemon executable
 /usr/sbin/ipwatchd-script                  - user-defined script
 /usr/share/man/man8/ipwatchd.8.gz          - manual page
@@ -44,13 +44,13 @@ What gets installed
 IPwatchD configuration
 ----------------------
 
-Edit configuration file /etc/ipwatchd.conf with your 
+Edit configuration file "/etc/ipwatchd.conf" with your 
 favorite text editor to suite your needs.
 
-You can run IPwatchD as root with init script:
-# /etc/init.d/ipwatchd start
+You can run IPwatchD as systemd managed service:
+# systemctl start ipwatchd
 
-Or you can run it with command:
+Or you can run it directly with following command:
 # /usr/sbin/ipwatchd -c /etc/ipwatchd.conf
 
 For more information please read "ipwatchd" manual page.
