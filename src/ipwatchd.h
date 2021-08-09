@@ -190,6 +190,7 @@ int ipwd_check_pidfile (void);
 /* devinfo.c */
 int ipwd_devinfo (const char *p_dev, char *p_ip, char *p_mac);
 int ipwd_fill_devices (void);
+int ipwd_check_dev (const char *p_dev);
 
 /* genarp.c */
 int ipwd_genarp (const char *dev, const char *p_sip, const char *p_smac, const char *p_dip, const char *p_dmac, int opcode);
