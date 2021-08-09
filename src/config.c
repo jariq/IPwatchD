@@ -1,15 +1,15 @@
 /* IPwatchD - IP conflict detection tool for Linux
  * Copyright (C) 2007-2018 Jaroslav Imrich <jariq(at)jariq(dot)sk>
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * version 2 as published by the Free Software Foundation.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *  
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -69,9 +69,6 @@ int ipwd_read_config (const char *filename)
 
 	char variable[100];
 	char value[400];
-
-	pcap_t *h_pcap = NULL;
-	char errbuf[PCAP_ERRBUF_SIZE];
 
 	int iface_len = 0;
 
@@ -224,7 +221,7 @@ int ipwd_read_config (const char *filename)
 				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration parse error : file %s specified as user_script does not exist", value);
 				return (IPWD_RV_ERROR);
 			}
-	
+
 			if ((config.script = (char *) malloc ((strlen (value) + 1) * sizeof (char))) == NULL)
 			{
 				ipwd_message (IPWD_MSG_TYPE_ERROR, "Configuration parse error : malloc for user_script failed");
@@ -293,22 +290,12 @@ int ipwd_read_config (const char *filename)
 				ipwd_message (IPWD_MSG_TYPE_ERROR, "Not enough parameters in configuration file on line %d", linenum);
 				return (IPWD_RV_ERROR);
 			}
-	
+
 			/* Check if device is valid ethernet device */
-			h_pcap = pcap_open_live (variable, BUFSIZ, 0, 0, errbuf);
-			if (h_pcap == NULL)
+			if (ipwd_check_dev (variable) != IPWD_RV_SUCCESS)
 			{
-				ipwd_message (IPWD_MSG_TYPE_ERROR, "IPwatchD is unable to work with interface \"%s\"", variable);
 				return (IPWD_RV_ERROR);
 			}
-
-			if (pcap_datalink (h_pcap) != DLT_EN10MB)
-			{
-				ipwd_message (IPWD_MSG_TYPE_ERROR, "Device \"%s\" is not valid ethernet interface", variable);
-				return (IPWD_RV_ERROR);
-			}
-
-			pcap_close (h_pcap);
 
 			/* Check mode value */
 			if ((strcasecmp (value, "active") != 0) && (strcasecmp (value, "passive") != 0))

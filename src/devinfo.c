@@ -132,12 +132,8 @@ int ipwd_fill_devices (void)
 	int ifaces_num = 0;
 	int i = 0;
 
-	pcap_t *h_pcap = NULL;
-	char errbuf[PCAP_ERRBUF_SIZE];
-
 	memset (ifaces_buf, 0, sizeof (ifaces_buf));
 	memset (&ifc, 0, sizeof (ifc));
-	memset (errbuf, 0, PCAP_ERRBUF_SIZE);
 
 	/* Verify that devices structure is empty and configuration mode is automatic */
 	if ((devices.dev != NULL) || (devices.devnum != 0) || (config.mode != IPWD_CONFIGURATION_MODE_AUTOMATIC))
@@ -191,21 +187,10 @@ int ipwd_fill_devices (void)
 		}
 
 		/* Check if device is valid ethernet device */
-		h_pcap = pcap_open_live (iface->ifr_name, BUFSIZ, 0, 0, errbuf);
-		if (h_pcap == NULL)
+		if (ipwd_check_dev (iface->ifr_name) != IPWD_RV_SUCCESS) 
 		{
-			ipwd_message (IPWD_MSG_TYPE_ERROR, "IPwatchD is unable to work with device \"%s\"", iface->ifr_name);
 			continue;
 		}
-
-		if (pcap_datalink (h_pcap) != DLT_EN10MB)
-		{
-			ipwd_message (IPWD_MSG_TYPE_ERROR, "Device \"%s\" is not valid ethernet device", iface->ifr_name);
-			pcap_close (h_pcap);
-			continue;
-		}
-
-		pcap_close (h_pcap);
 
 		/* Put read values into devices structure */
 		if ((devices.dev = (IPWD_S_DEV *) realloc (devices.dev, (devices.devnum + 1) * sizeof (IPWD_S_DEV))) == NULL)
@@ -236,3 +221,34 @@ int ipwd_fill_devices (void)
 
 }
 
+
+//! Check if device is valid ethernet device
+/*!
+ * \param p_dev Name of the device (i.e. eth0)
+ * \return IPWD_RV_SUCCESS if successful IPWD_RV_ERROR otherwise
+ */
+int ipwd_check_dev (const char* p_dev)
+{
+	pcap_t *h_pcap = NULL;
+	char errbuf[PCAP_ERRBUF_SIZE];
+
+	memset (errbuf, 0, PCAP_ERRBUF_SIZE);
+
+	h_pcap = pcap_open_live (p_dev, BUFSIZ, 0, 0, errbuf);
+	if (h_pcap == NULL)
+	{
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "IPwatchD is unable to work with interface \"%s\"", p_dev);
+		return (IPWD_RV_ERROR);
+	}
+
+	if (pcap_datalink (h_pcap) != DLT_EN10MB)
+	{
+		ipwd_message (IPWD_MSG_TYPE_ERROR, "Device \"%s\" is not valid ethernet interface", p_dev);
+		return (IPWD_RV_ERROR);
+	}
+
+	pcap_close (h_pcap);
+
+	return IPWD_RV_SUCCESS;
+
+}
