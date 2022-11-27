@@ -195,7 +195,7 @@ int main (int argc, char *argv[])
 	}
 
 	/* Initialize libpcap and listen on all interfaces */
-	h_pcap = pcap_open_live ("any", BUFSIZ, 0, 0, errbuf);
+	h_pcap = pcap_open_live ("any", BUFSIZ, 0, 100, errbuf);
 	if (h_pcap == NULL)
 	{
 		ipwd_message (IPWD_MSG_TYPE_ERROR, "Unable to create packet capture object - %s", errbuf);
